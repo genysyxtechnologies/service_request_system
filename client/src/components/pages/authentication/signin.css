@@ -1,0 +1,7 @@
+.signin-container {
+   background-image: url(../../../assets/images/signin/signin-image.jpg); 
+   background-size: cover; 
+   background-repeat: no-repeat;
+   background-attachment: fixed;
+
+}

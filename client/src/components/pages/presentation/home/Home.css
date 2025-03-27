@@ -1,0 +1,27 @@
+.custom-table .ant-table {
+    border-radius: 8px;
+  }
+  
+  .custom-table .ant-table-container {
+    border-radius: 8px !important;
+  }
+  
+  .custom-table .ant-table-thead > tr > th:first-child {
+    border-start-start-radius: 8px !important;
+  }
+  
+  .custom-table .ant-table-thead > tr > th:last-child {
+    border-start-end-radius: 8px !important;
+  }
+  
+  .custom-table .ant-table-tbody > tr:last-child > td:first-child {
+    border-end-start-radius: 8px !important;
+  }
+  
+  .custom-table .ant-table-tbody > tr:last-child > td:last-child {
+    border-end-end-radius: 8px !important;
+  }
+  
+  .custom-table .ant-table-cell {
+    border-color: #f0f0f0 !important;
+  }
