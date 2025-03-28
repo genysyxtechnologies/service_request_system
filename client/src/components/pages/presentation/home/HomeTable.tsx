@@ -117,8 +117,6 @@ const Tables = ({ onItemClick }: SidebarProps) => {
   ];
 
 
-
-  // Enhanced columns with animations
   const columnsServices = [
     { 
       title: "Name", 

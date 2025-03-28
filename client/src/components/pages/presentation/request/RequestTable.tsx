@@ -201,8 +201,7 @@ const RequestTable: React.FC = () => {
                     Request Details
                   </h4>
                   <p className="text-gray-600">
-                    Additional information about {record.name} would appear
-                    here.
+                    Information about {record.name} 
                   </p>
                   <div className="mt-3 flex space-x-3">
                     <button className="px-3 py-1 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors">
