@@ -5,7 +5,8 @@ import Presentation from "./components/pages/presentation/Presentation";
 import Home from "./components/pages/presentation/home/Home";
 import Services from "./components/pages/presentation/Services/Services";
 import RequestTable from "./components/pages/presentation/request/RequestTable";
-import Category from "./components/pages/presentation/category/Category";
+import Category from "./components/pages/presentation/category/Services";
+import Dashboard from "./components/pages/presentation/dashboard/Dashboard";
 
 function App() {
   return (
@@ -18,6 +19,7 @@ function App() {
           <Route path="services" element={<Services />} />
           <Route path="request" element={<RequestTable />} />
           <Route path="category" element={<Category />} />
+          <Route path="dashboard" element={<Dashboard />} />
         </Route>
       </Routes>
     </div>

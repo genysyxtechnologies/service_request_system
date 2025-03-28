@@ -3,16 +3,21 @@ import NewRequest from "./NewRequest";
 import Tables from "./HomeTable";
 
 function Home() {
-  const [openModal, setOpenModal] = useState(false);
-  const handleItemClick = () => {
-    console.log('Hello')
-    setOpenModal(true)
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const handleSubmit = (values: any) => {
+    console.log("Form submitted:", values);
+    // Handle form submission
   };
 
   return (
     <div className="w-full">
-      <NewRequest isOpen={openModal} />
-      <Tables onItemClick={() => handleItemClick()} />
+       <NewRequest 
+        isOpen={isModalOpen} 
+        onClose={() => setIsModalOpen(false)}
+        onSubmit={handleSubmit}
+      />
+      <Tables onItemClick={() => setIsModalOpen(true)} />
     </div>
   );
 }

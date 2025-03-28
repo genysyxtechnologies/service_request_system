@@ -6,6 +6,7 @@ import image1 from "../../../assets/images/signin/image1.png";
 import image2 from "../../../assets/images/signin/image2.png";
 import image4 from "../../../assets/images/signin/image4.png";
 import "./signin.css";
+import { useNavigate } from "react-router-dom";
 
 function SignIn() {
   const [staticImages] = useState([
@@ -25,6 +26,8 @@ function SignIn() {
 
   const [checked, setChecked] = useState(false);
   const [disabled, setDisabled] = useState(false);
+  const [isSignIn, setIsSignIn] = useState(true);
+  const navigate = useNavigate();
 
   const onChange: CheckboxProps["onChange"] = (e) => {
     setChecked(e.target.checked);
@@ -35,25 +38,22 @@ function SignIn() {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5 }}
-      className="w-full h-screen signin-container flex items-center justify-center py-24"
+      className="w-full  signin-container h-screen flex items-center justify-center py-10"
     >
       <motion.div
         initial={{ scale: 0.95, y: 20 }}
         animate={{ scale: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.1 }}
-        className="grid grid-cols-2 mx-auto md:w-8/12 w-10/12 h-full shadow-xl rounded-lg overflow-hidden"
+        className="grid grid-cols-2 mx-auto md:w-8/12 w-10/12 h-full rounded-lg overflow-auto "
       >
         {/* Left Section */}
         <motion.div
           initial={{ x: -50 }}
           animate={{ x: 0 }}
           transition={{ duration: 0.5 }}
-          className="flex flex-col gap-6 bg-slate-300 p-8 bg-opacity-65"
+          className="flex flex-col gap-6 bg-secondary p-8 bg-opacity-70"
         >
-          <motion.div
-            whileHover={{ scale: 1.02 }}
-            className="flex"
-          >
+          <motion.div whileHover={{ scale: 1.02 }} className="flex">
             <img src={image1} alt="Logo" className="mr-8" />
           </motion.div>
 
@@ -85,7 +85,7 @@ function SignIn() {
               >
                 <img src={item.image} alt="" className="object-cover" />
               </motion.div>
-              <span className="text-gray-700">{item.text}</span>
+              <span className="text-[#212121]">{item.text}</span>
             </motion.div>
           ))}
         </motion.div>
@@ -95,7 +95,8 @@ function SignIn() {
           initial={{ x: 50 }}
           animate={{ x: 0 }}
           transition={{ duration: 0.5 }}
-          className="bg-[#fff] flex flex-col p-8 justify-around h-[85%] my-auto gap-6"
+          className="bg-[#fff] rounded-r-md flex flex-col p-8 justify-around my-auto gap-6"
+          style={{ height: isSignIn ? "85%" : "100%" }}
         >
           <motion.div
             initial={{ opacity: 0 }}
@@ -105,35 +106,89 @@ function SignIn() {
           >
             <motion.h1
               whileHover={{ scale: 1.01 }}
-              className="text-4xl font-bold text-gray-800"
+              className="text-4xl font-semibold text-gray-800"
             >
-              Sign In
+              {isSignIn ? "Sign In" : "Sign Up"}
             </motion.h1>
 
-            <div className="flex flex-col gap-4">
-              <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.5 }}
-              >
-                <span className="text-gray-600">Email address</span>
-                <Input 
-                  placeholder="Enter your email" 
-                  className="py-2 mt-1"
-                />
-              </motion.div>
-              <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.6 }}
-              >
-                <span className="text-gray-600">Password</span>
-                <Input.Password 
-                  placeholder="Enter your password" 
-                  className="py-2 mt-1"
-                />
-              </motion.div>
-            </div>
+            {isSignIn ? (
+              <div className="flex flex-col gap-4">
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.5 }}
+                >
+                  <span className="text-gray-600">Email address</span>
+                  <Input placeholder="Enter your email" className="py-2 mt-1" />
+                </motion.div>
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.6 }}
+                >
+                  <span className="text-gray-600">Password</span>
+                  <Input.Password
+                    placeholder="Enter your password"
+                    className="py-2 mt-1"
+                  />
+                </motion.div>
+              </div>
+            ) : (
+              <div className="flex flex-col gap-4">
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.5 }}
+                >
+                  <span className="text-gray-600">First Name</span>
+                  <Input
+                    placeholder="Enter your first name"
+                    className="py-2 mt-1"
+                  />
+                </motion.div>
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.5 }}
+                >
+                  <span className="text-gray-600">Last Name</span>
+                  <Input
+                    placeholder="Enter your last name"
+                    className="py-2 mt-1"
+                  />
+                </motion.div>
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.5 }}
+                >
+                  <span className="text-gray-600">Email address</span>
+                  <Input placeholder="Enter your email" className="py-2 mt-1" />
+                </motion.div>
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.6 }}
+                >
+                  <span className="text-gray-600">Password</span>
+                  <Input.Password
+                    placeholder="Enter your password"
+                    className="py-2 mt-1"
+                  />
+                </motion.div>
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.6 }}
+                >
+                  <span className="text-gray-600">Confirm Password</span>
+                  <Input.Password
+                    placeholder="Confirm your password"
+                    className="py-2 mt-1"
+                  />
+                </motion.div>
+              </div>
+            )}
 
             <motion.div
               initial={{ opacity: 0 }}
@@ -163,19 +218,17 @@ function SignIn() {
             transition={{ delay: 0.8 }}
             className="flex flex-col gap-6"
           >
-            <motion.div
-              whileHover={{ scale: 1.01 }}
-              whileTap={{ scale: 0.98 }}
-            >
-              <Button 
-                type="primary" 
-                className="w-full bg-primary text-[#fff] font-semibold py-5 h-auto"
+            <motion.div whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.98 }}>
+              <Button
+                onClick={() => navigate("/app")}
+                type="primary"
+                className={`w-full bg-primary text-[#fff] font-semibold  h-auto ${isSignIn ? "py-5" : "py-3"}`}
                 size="large"
               >
-                Sign in
+                {isSignIn ? "Sign Up" : "Sign Up"}
               </Button>
             </motion.div>
-            
+
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -186,19 +239,20 @@ function SignIn() {
               <span className="text-gray-400">Or</span>
               <hr className="w-full border-gray-200" />
             </motion.div>
-            
+
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 1 }}
               className="flex items-center justify-center gap-2"
             >
-              <span className="text-gray-600">Don't have an account?</span>
+              <span className="text-gray-600">{isSignIn ? "Don't have an account?" : "Already have an account?"}</span>
               <motion.span
+                onClick={() => setIsSignIn((p) => !p)}
                 whileHover={{ scale: 1.05 }}
                 className="text-primary font-semibold cursor-pointer"
               >
-                Sign Up
+                {isSignIn ? "Sign UP" : "Sign In"}
               </motion.span>
             </motion.div>
           </motion.div>
