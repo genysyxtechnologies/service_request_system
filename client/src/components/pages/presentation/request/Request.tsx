@@ -1,10 +1,11 @@
 import RequestTable from "./RequestTable";
 
 function Request() {
-
   return (
-    <RequestTable/>
-  )
+    <div>
+      <RequestTable />
+    </div>
+  );
 }
 
-export default Request
+export default Request;

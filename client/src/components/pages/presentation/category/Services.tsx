@@ -2,7 +2,7 @@ import { Tabs } from "antd";
 import ServicesCategory from "./ServiceCategory";
 import Services from "./Category";
 import { motion } from "framer-motion";
-import "./Category.css"; 
+import "./Category.css";
 
 const { TabPane } = Tabs;
 

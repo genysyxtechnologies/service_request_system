@@ -1,49 +1,61 @@
-import { Table, Pagination, Button, Tooltip } from "antd";
+import { Table, Pagination, Button, Spin, ConfigProvider } from "antd";
 import { motion } from "framer-motion";
-import { useState } from "react";
-import { BsThreeDotsVertical } from "react-icons/bs";
+import { useEffect, useState } from "react";
+import { BsPencilSquare, BsPlusCircle } from "react-icons/bs";
 import NewCategory from "./NewCategory";
+import image2 from "../../../../assets/images/services/image2.png";
+import { useCategory } from "../../../services/useCategory";
+import { useSelector } from "react-redux";
+import NewService from "../Services/NewService";
+import UpdateCategory from "./UpdateCategory";
 
-interface SidebarProps {
-  onItemClick: () => void;
-}
-
-const Services = ({ onItemClick }: SidebarProps) => {
+const Services = () => {
+  const { token, isAdmin } = useSelector((state: any) => state.auth);
   const [currentPage, setCurrentPage] = useState<number>(1);
-  const [selectedRow, setSelectedRow] = useState<number | null>(null);
+  const [pageSize, setPageSize] = useState<number>(10);
   const [isModalVisible, setModalVisible] = useState<boolean>(false);
-  const servicesData = [
-    {
-      key: "1",
-      name: "IT Support",
-      description: "Help with tech and IT related issues",
-      date: "2025-03-29",
-    },
-    {
-      key: "2",
-      name: "Network Setup",
-      description: "Office network installation and configuration",
-      date: "2025-03-29",
-    },
-    {
-      key: "3",
-      name: "Software Installation",
-      description: "Installation of licensed software",
-      date: "2025-03-29",
-    },
-    {
-      key: "4",
-      name: "Hardware Repair",
-      description: "Diagnose and fix hardware issues",
-      date: "2025-03-29",
-    },
-    {
-      key: "5",
-      name: "Email Setup",
-      description: "Configure email clients and accounts",
-      date: "2025-03-29",
-    },
-  ];
+  const [isUpdateModalVisible, setIsUpdateModalVisible] =
+    useState<boolean>(false);
+  const [isServiceModalVisible, setIsServiceModalVisible] =
+    useState<boolean>(false);
+
+  const {
+    fetchCategories,
+    allCategories,
+    loading,
+    error,
+    setUpdateValue,
+    updateValue,
+    updateCategory,
+    setCategoryId,
+    categoryId,
+  } = useCategory(token, isAdmin);
+
+  useEffect(() => {
+    (async () => {
+      await fetchCategories();
+    })();
+  }, []);
+
+  const handleUpdateClick = (record: any) => {
+    if (!isAdmin) {
+      return;
+    }
+    setUpdateValue(record.name);
+    setCategoryId(record.id);
+    setIsUpdateModalVisible(true);
+  };
+
+  const handleNewServiceClick = (record: any) => {
+    setCategoryId(record.id);
+    setIsServiceModalVisible(true);
+  };
+
+  // Calculate paginated data
+  const paginatedData = allCategories.slice(
+    (currentPage - 1) * pageSize,
+    currentPage * pageSize
+  );
 
   const columnsServices = [
     {
@@ -55,145 +67,233 @@ const Services = ({ onItemClick }: SidebarProps) => {
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.3, delay: index * 0.05 }}
-          className="font-medium text-gray-800"
-        >
-          {text}
-        </motion.div>
-      ),
-    },
-    {
-      title: "Description",
-      dataIndex: "description",
-      key: "description",
-      render: (text: string, record: any, index: number) => (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.3, delay: index * 0.1 }}
-          className="text-gray-600 text-sm"
-        >
-          {text}
-        </motion.div>
-      ),
-    },
-    {
-      title: "Date",
-      dataIndex: "date",
-      key: "date",
-      render: (text: string, record: any, index: number) => (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.3, delay: index * 0.1 }}
-          className="text-gray-600 text-sm"
-        >
-          {text}
-        </motion.div>
-      ),
-    },
-    {
-      title: "",
-      dataIndex: "action",
-      key: "action",
-      render: (text: string, record: any, index: number) => (
-        <Tooltip
-        title="Actions"
-        placement="right"
-        className="custom-tooltip"
-        color="#3b82f6"
+          className="font-medium text-gray-800 flex items-center gap-3"
         >
           <motion.div
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.3, delay: index * 0.15 }}
-            whileHover={{ scale: 1.05 }}
+            className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-100 to-blue-50 flex items-center justify-center shadow-sm"
+            whileHover={{ rotate: 5, scale: 1.1 }}
+            transition={{ type: "spring", stiffness: 300 }}
           >
-            <Button
-              onClick={() => {
-                setModalVisible((p) => !p);
-              }}
-            >
-              <BsThreeDotsVertical className="text-black" />
-            </Button>
+            <span className="text-blue-600 font-semibold">
+              {text.charAt(0).toUpperCase()}
+            </span>
           </motion.div>
-        </Tooltip>
+          <span className="text-gray-700">{text}</span>
+        </motion.div>
+      ),
+    },
+    {
+      title: "New Service",
+      key: "newService",
+      render: (record: any) => (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.3 }}
+        >
+          <Button
+            onClick={() => handleNewServiceClick(record)}
+            type="text"
+            className="flex items-center gap-2 text-green-600 hover:text-green-700"
+          >
+            <motion.div
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className="flex items-center gap-2"
+            >
+              <BsPlusCircle className="text-lg" />
+              <span className="font-medium">New Service</span>
+            </motion.div>
+          </Button>
+        </motion.div>
+      ),
+    },
+    {
+      title: "Actions",
+      key: "actions",
+      render: (record: any) => (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.3 }}
+        >
+          <Button
+            onClick={() => handleUpdateClick(record)}
+            type="text"
+            className="flex items-center gap-2 text-blue-600 hover:text-blue-700"
+          >
+            <motion.div
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className="flex items-center gap-2"
+            >
+              <BsPencilSquare className="text-lg" />
+              <span className="font-medium">Update</span>
+            </motion.div>
+          </Button>
+        </motion.div>
       ),
     },
   ];
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5 }}
-      className="flex flex-col"
-    >
-      <motion.h2
-        className="text-[30px] mb-6 text-[#6D6D6D] font-semibold"
-        whileHover={{ scale: 1.01 }}
-        transition={{ duration: 0.2 }}
-      >
-        Category
-      </motion.h2>
-
-      <Table
-        columns={columnsServices}
-        dataSource={servicesData}
-        pagination={false}
-        className="custom-table flex-1"
-        components={{
-          body: {
-            row: ({ children, ...props }) => (
-              <motion.tr
-                {...props}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.3 }}
-                whileHover={{
-                  backgroundColor: "rgba(245, 245, 245, 0.8)",
-                  boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
-                  transition: { duration: 0.2 },
-                }}
-                className="group"
-              >
-                {children}
-              </motion.tr>
-            ),
+    <ConfigProvider
+      theme={{
+        components: {
+          Pagination: {
+            itemActiveBg: "#3b82f6",
+            itemActiveColorDisabled: "rgba(255, 255, 255, 0.25)",
+            itemBg: "#ffffff",
+            itemLinkBg: "#ffffff",
           },
-        }}
-        style={{
-          borderRadius: "10px",
-          overflow: "hidden",
-          boxShadow: "0 4px 6px rgba(0,0,0,0.05)",
-          backgroundColor: "#fff",
-        }}
-      />
+        },
+      }}
+    >
       <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.4, duration: 0.5 }}
-        className="flex justify-center mt-6"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="flex flex-col p-6 bg-white rounded-xl shadow-lg border border-gray-100"
       >
-        <Pagination
-          current={currentPage}
-          total={50}
-          onChange={(page) => setCurrentPage(page)}
-          showSizeChanger={false}
-          className="ant-pagination-item-active:bg-indigo-600 ant-pagination-item-active:border-indigo-600"
-          itemRender={(page, type, originalElement) => (
-            <motion.div whileHover={{ scale: 1.1 }}>
-              {originalElement}
-            </motion.div>
-          )}
-        />
-      </motion.div>
+        <div className="flex items-center justify-between w-full mb-8">
+          <motion.h2
+            className="text-2xl md:text-3xl text-gray-800 font-bold"
+            whileHover={{ scale: 1.01 }}
+            transition={{ duration: 0.2 }}
+          >
+            Categories
+          </motion.h2>
+          <motion.div
+            whileHover={{ scale: 1.03 }}
+            whileTap={{ scale: 0.98 }}
+            transition={{
+              type: "spring",
+              stiffness: 400,
+              damping: 15,
+              duration: 0.15,
+            }}
+          >
+            <Button
+              onClick={() => setModalVisible(true)}
+              type="primary"
+              className="flex items-center justify-center gap-2 bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 text-white font-medium h-10 px-6 rounded-lg transition-all duration-200 shadow-sm hover:shadow-md"
+              size="middle"
+            >
+              <motion.img
+                src={image2}
+                alt="Create service"
+                className="h-5 w-5"
+                whileHover={{ rotate: 5 }}
+                transition={{ type: "spring", stiffness: 300 }}
+              />
+              <span>Create Category</span>
+            </Button>
+          </motion.div>
+        </div>
 
-      <NewCategory
-        visible={isModalVisible}
-        onCancel={() => setModalVisible(false)}
-        onSave={() => {}}
-      />
-    </motion.div>
+        <Spin spinning={loading} tip="Loading categories..." size="large">
+          <Table
+            columns={columnsServices}
+            dataSource={paginatedData}
+            pagination={false}
+            className="custom-table flex-1"
+            components={{
+              body: {
+                row: ({ children, ...props }) => (
+                  <motion.tr
+                    {...props}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.3 }}
+                    whileHover={{
+                      backgroundColor: "rgba(239, 246, 255, 0.5)",
+                      boxShadow: "0 4px 12px rgba(0,0,0,0.05)",
+                      transition: { duration: 0.2 },
+                    }}
+                    className="group"
+                  >
+                    {children}
+                  </motion.tr>
+                ),
+              },
+            }}
+            style={{
+              borderRadius: "12px",
+              overflow: "hidden",
+              border: "1px solid #f0f0f0",
+            }}
+            rowClassName={() => "hover:bg-blue-50"}
+          />
+        </Spin>
+
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.4, duration: 0.5 }}
+          className="flex justify-center mt-8"
+        >
+          <Pagination
+            current={currentPage}
+            pageSize={pageSize}
+            total={allCategories.length}
+            onChange={(page, size) => {
+              setCurrentPage(page);
+              setPageSize(size);
+            }}
+            showSizeChanger
+            pageSizeOptions={["10", "20", "50", "100"]}
+            className="custom-pagination"
+            itemRender={(page, type, originalElement) => (
+              <motion.div
+                whileHover={{ scale: type === "page" ? 1.1 : 1 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                {originalElement}
+              </motion.div>
+            )}
+            showTotal={(total, range) => (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="text-gray-600 mr-4"
+              >
+                Showing {range[0]}-{range[1]} of {total} items
+              </motion.div>
+            )}
+          />
+        </motion.div>
+
+        <NewCategory
+          visible={isModalVisible}
+          onCancel={() => setModalVisible(false)}
+          onSave={() => {}}
+        />
+        <NewService
+          categoryId={categoryId}
+          visible={isServiceModalVisible}
+          onClose={() => setIsServiceModalVisible(false)}
+        />
+
+        {isUpdateModalVisible && (
+          <UpdateCategory
+            visible={isUpdateModalVisible}
+            onCancel={() => setIsUpdateModalVisible(false)}
+            onSave={async () => {
+              setIsUpdateModalVisible(false);
+              await updateCategory();
+              await fetchCategories();
+            }}
+            name={updateValue}
+            setName={setUpdateValue}
+            loading={loading}
+            error={error}
+            title="Edit Category"
+            successMessage="Category updated successfully!"
+            buttonText="Update"
+          />
+        )}
+      </motion.div>
+    </ConfigProvider>
   );
 };
 

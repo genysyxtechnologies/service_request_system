@@ -1,35 +1,38 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Modal, Form, Input, Button, message } from "antd";
 import { motion, AnimatePresence } from "framer-motion";
-import { useSelector } from "react-redux";
-import { useCategory } from "../../../services/useCategory";
 import {
   LoadingOutlined,
   CheckCircleFilled,
   ExclamationCircleOutlined,
 } from "@ant-design/icons";
 
-interface CreateCategoryProps {
+interface UpdateCategoryProps {
   visible: boolean;
   onCancel: () => void;
   onSave: () => void;
+  name: string;
+  setName: (name: string) => void;
+  loading?: boolean;
+  error?: any;
+  title?: string;
+  successMessage?: string;
+  buttonText?: string;
 }
 
-const NewCategory: React.FC<CreateCategoryProps> = ({
+const UpdateCategory: React.FC<UpdateCategoryProps> = ({
   visible,
   onCancel,
   onSave,
+  name,
+  setName,
+  loading = false,
+  error = null,
+  title = "Update Category",
+  successMessage = "Category updated successfully!",
+  buttonText = "Update Category",
 }) => {
   const [form] = Form.useForm();
-  const { token } = useSelector((state: any) => state.auth);
-  const {
-    categories,
-    setCategories,
-    createCategory,
-    error,
-    loading,
-    fetchCategories,
-  } = useCategory(token);
   const [messageApi, contextHolder] = message.useMessage();
 
   const validateCategoryName = (_: any, value: string) => {
@@ -52,9 +55,7 @@ const NewCategory: React.FC<CreateCategoryProps> = ({
   const handleSave = async () => {
     try {
       await form.validateFields();
-      await createCategory();
-      await fetchCategories();
-
+      onSave();
       messageApi.success({
         content: (
           <motion.div
@@ -63,18 +64,16 @@ const NewCategory: React.FC<CreateCategoryProps> = ({
             className="flex items-center gap-2"
           >
             <CheckCircleFilled className="text-green-500 text-lg" />
-            <span>Category created successfully!</span>
+            <span>{successMessage}</span>
           </motion.div>
         ),
         duration: 2,
       });
 
-      onSave();
       form.resetFields();
     } catch (errorInfo) {
       console.error("Validation Failed:", errorInfo);
 
-      //  error messages
       if (errorInfo.errorFields) {
         errorInfo.errorFields.forEach((field) => {
           messageApi.error({
@@ -95,6 +94,16 @@ const NewCategory: React.FC<CreateCategoryProps> = ({
     }
   };
 
+
+  useEffect(() => {
+    if (visible) {
+      console.log("NAME FROM ROOT", name);
+      form.setFieldsValue({
+        categoryName: name,
+      });
+    }
+  }, [visible, name, form]);
+
   return (
     <>
       {contextHolder}
@@ -108,7 +117,7 @@ const NewCategory: React.FC<CreateCategoryProps> = ({
                 transition={{ type: "spring", stiffness: 300 }}
                 className="text-2xl font-bold text-gray-800"
               >
-                Create New Category
+                {title}
               </motion.div>
             }
             open={visible}
@@ -136,7 +145,7 @@ const NewCategory: React.FC<CreateCategoryProps> = ({
                       className="text-gray-700 font-medium flex items-center"
                       whileHover={{ scale: 1.01 }}
                     >
-                      Category Name <span className="text-red-500 ml-1">*</span>
+                      Category <span className="text-red-500 ml-1">*</span>
                     </motion.span>
                   }
                   rules={[
@@ -151,10 +160,8 @@ const NewCategory: React.FC<CreateCategoryProps> = ({
                   validateTrigger={["onChange", "onBlur"]}
                 >
                   <Input
-                    value={categories.name}
                     onChange={(e) => {
-                      setCategories({ ...categories, name: e.target.value });
-                      // Trigger validation on change
+                      setName(e.target.value);
                       form.validateFields(["categoryName"]);
                     }}
                     placeholder="e.g. IT Support"
@@ -201,7 +208,7 @@ const NewCategory: React.FC<CreateCategoryProps> = ({
                   loading={loading}
                   icon={loading ? <LoadingOutlined /> : null}
                 >
-                  {loading ? "Creating..." : "Create Category"}
+                  {loading ? "Saving..." : buttonText}
                 </Button>
               </motion.div>
             </Form>
@@ -212,4 +219,4 @@ const NewCategory: React.FC<CreateCategoryProps> = ({
   );
 };
 
-export default NewCategory;
+export default UpdateCategory;

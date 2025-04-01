@@ -24,7 +24,7 @@ const DeleteService: React.FC<DeleteServiceProps> = ({
       <div className="text-center">
         {/* Icon */}
         <div className="mb-4">
-          <img src={image1} alt='Delete' className="mx-auto w-2/12"/>
+          <img src={image1} alt="Delete" className="mx-auto w-2/12" />
         </div>
 
         {/* Title */}

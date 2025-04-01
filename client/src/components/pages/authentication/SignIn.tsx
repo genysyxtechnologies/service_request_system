@@ -6,9 +6,23 @@ import image1 from "../../../assets/images/signin/image1.png";
 import image2 from "../../../assets/images/signin/image2.png";
 import image4 from "../../../assets/images/signin/image4.png";
 import "./signin.css";
-import { useNavigate } from "react-router-dom";
+import { useAuth } from "../../services/useAuth";
+import AuthAnimation from "../../animations/AuthAnimation";
 
 function SignIn() {
+  const {
+    signup,
+    user,
+    setUser,
+    loading,
+    signin,
+    signUser,
+    setSignUser,
+    isSignIn,
+    setIsSignIn,
+    fieldErrors,
+  } = useAuth();
+
   const [staticImages] = useState([
     {
       image: image2,
@@ -26,11 +40,21 @@ function SignIn() {
 
   const [checked, setChecked] = useState(false);
   const [disabled, setDisabled] = useState(false);
-  const [isSignIn, setIsSignIn] = useState(true);
-  const navigate = useNavigate();
 
   const onChange: CheckboxProps["onChange"] = (e) => {
     setChecked(e.target.checked);
+  };
+
+  // Animation variants
+  const shakeAnimation = {
+    x: [0, -10, 10, -10, 10, 0],
+    transition: { duration: 0.5 },
+  };
+
+  const getInputClassName = (fieldName: string) => {
+    return fieldErrors[fieldName]
+      ? "py-2 mt-1 border-red-500 focus:border-red-500 focus:shadow-red-200"
+      : "py-2 mt-1 border-gray-300 hover:border-blue-400 focus:border-blue-500";
   };
 
   return (
@@ -38,20 +62,20 @@ function SignIn() {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5 }}
-      className="w-full  signin-container h-screen flex items-center justify-center py-10"
+      className="w-full signin-container h-screen flex items-center justify-center py-10"
     >
       <motion.div
         initial={{ scale: 0.95, y: 20 }}
         animate={{ scale: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.1 }}
-        className="grid grid-cols-2 mx-auto md:w-8/12 w-10/12 h-full rounded-lg overflow-auto "
+        className="grid grid-cols-1 lg:grid-cols-2 mx-auto md:w-8/12 w-11/12 h-full rounded-lg overflow-auto shadow-xl"
       >
         {/* Left Section */}
         <motion.div
           initial={{ x: -50 }}
           animate={{ x: 0 }}
           transition={{ duration: 0.5 }}
-          className="flex flex-col gap-6 bg-secondary p-8 bg-opacity-70"
+          className="hidden lg:flex flex-col gap-6 bg-secondary p-8 bg-opacity-70"
         >
           <motion.div whileHover={{ scale: 1.02 }} className="flex">
             <img src={image1} alt="Logo" className="mr-8" />
@@ -95,8 +119,7 @@ function SignIn() {
           initial={{ x: 50 }}
           animate={{ x: 0 }}
           transition={{ duration: 0.5 }}
-          className="bg-[#fff] rounded-r-md flex flex-col p-8 justify-around my-auto gap-6"
-          style={{ height: isSignIn ? "85%" : "100%" }}
+          className="bg-white rounded-r-md flex flex-col p-8 justify-center my-auto gap-6"
         >
           <motion.div
             initial={{ opacity: 0 }}
@@ -106,9 +129,9 @@ function SignIn() {
           >
             <motion.h1
               whileHover={{ scale: 1.01 }}
-              className="text-4xl font-semibold text-gray-800"
+              className="text-3xl font-bold text-gray-800"
             >
-              {isSignIn ? "Sign In" : "Sign Up"}
+              {isSignIn ? "Sign In" : "Create Account"}
             </motion.h1>
 
             {isSignIn ? (
@@ -118,8 +141,29 @@ function SignIn() {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.5 }}
                 >
-                  <span className="text-gray-600">Email address</span>
-                  <Input placeholder="Enter your email" className="py-2 mt-1" />
+                  <span className="text-gray-600">Identifier</span>
+                  <motion.div
+                    animate={fieldErrors.identifier ? shakeAnimation : {}}
+                  >
+                    <Input
+                      value={signUser.identifier}
+                      onChange={(e) =>
+                        setSignUser({ ...signUser, identifier: e.target.value })
+                      }
+                      placeholder="Email or username"
+                      className={getInputClassName("identifier")}
+                      size="large"
+                    />
+                  </motion.div>
+                  {fieldErrors.identifier && (
+                    <motion.p
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="text-red-500 text-sm mt-1"
+                    >
+                      {fieldErrors.identifier}
+                    </motion.p>
+                  )}
                 </motion.div>
                 <motion.div
                   initial={{ opacity: 0, y: 10 }}
@@ -127,35 +171,120 @@ function SignIn() {
                   transition={{ delay: 0.6 }}
                 >
                   <span className="text-gray-600">Password</span>
-                  <Input.Password
-                    placeholder="Enter your password"
-                    className="py-2 mt-1"
-                  />
+                  <motion.div
+                    animate={fieldErrors.password ? shakeAnimation : {}}
+                  >
+                    <Input.Password
+                      value={signUser.password}
+                      onChange={(e) =>
+                        setSignUser({ ...signUser, password: e.target.value })
+                      }
+                      placeholder="Enter your password"
+                      className={getInputClassName("password")}
+                      size="large"
+                    />
+                  </motion.div>
+                  {fieldErrors.password && (
+                    <motion.p
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="text-red-500 text-sm mt-1"
+                    >
+                      {fieldErrors.password}
+                    </motion.p>
+                  )}
                 </motion.div>
               </div>
             ) : (
               <div className="flex flex-col gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.5 }}
+                  >
+                    <span className="text-gray-600">First Name</span>
+                    <motion.div
+                      animate={fieldErrors.firstName ? shakeAnimation : {}}
+                    >
+                      <Input
+                        placeholder="First name"
+                        value={user.firstName}
+                        onChange={(e) =>
+                          setUser({ ...user, firstName: e.target.value })
+                        }
+                        className={getInputClassName("firstName")}
+                        size="large"
+                      />
+                    </motion.div>
+                    {fieldErrors.firstName && (
+                      <motion.p
+                        initial={{ opacity: 0, y: -10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="text-red-500 text-sm mt-1"
+                      >
+                        {fieldErrors.firstName}
+                      </motion.p>
+                    )}
+                  </motion.div>
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.5 }}
+                  >
+                    <span className="text-gray-600">Last Name</span>
+                    <motion.div
+                      animate={fieldErrors.lastName ? shakeAnimation : {}}
+                    >
+                      <Input
+                        value={user.lastName}
+                        onChange={(e) =>
+                          setUser({ ...user, lastName: e.target.value })
+                        }
+                        placeholder="Last name"
+                        className={getInputClassName("lastName")}
+                        size="large"
+                      />
+                    </motion.div>
+                    {fieldErrors.lastName && (
+                      <motion.p
+                        initial={{ opacity: 0, y: -10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="text-red-500 text-sm mt-1"
+                      >
+                        {fieldErrors.lastName}
+                      </motion.p>
+                    )}
+                  </motion.div>
+                </div>
                 <motion.div
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.5 }}
                 >
-                  <span className="text-gray-600">First Name</span>
-                  <Input
-                    placeholder="Enter your first name"
-                    className="py-2 mt-1"
-                  />
-                </motion.div>
-                <motion.div
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.5 }}
-                >
-                  <span className="text-gray-600">Last Name</span>
-                  <Input
-                    placeholder="Enter your last name"
-                    className="py-2 mt-1"
-                  />
+                  <span className="text-gray-600">Username</span>
+                  <motion.div
+                    animate={fieldErrors.username ? shakeAnimation : {}}
+                  >
+                    <Input
+                      value={user.username}
+                      onChange={(e) =>
+                        setUser({ ...user, username: e.target.value })
+                      }
+                      placeholder="Choose a username"
+                      className={getInputClassName("username")}
+                      size="large"
+                    />
+                  </motion.div>
+                  {fieldErrors.username && (
+                    <motion.p
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="text-red-500 text-sm mt-1"
+                    >
+                      {fieldErrors.username}
+                    </motion.p>
+                  )}
                 </motion.div>
                 <motion.div
                   initial={{ opacity: 0, y: 10 }}
@@ -163,7 +292,26 @@ function SignIn() {
                   transition={{ delay: 0.5 }}
                 >
                   <span className="text-gray-600">Email address</span>
-                  <Input placeholder="Enter your email" className="py-2 mt-1" />
+                  <motion.div animate={fieldErrors.email ? shakeAnimation : {}}>
+                    <Input
+                      value={user.email}
+                      onChange={(e) =>
+                        setUser({ ...user, email: e.target.value })
+                      }
+                      placeholder="your@email.com"
+                      className={getInputClassName("email")}
+                      size="large"
+                    />
+                  </motion.div>
+                  {fieldErrors.email && (
+                    <motion.p
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="text-red-500 text-sm mt-1"
+                    >
+                      {fieldErrors.email}
+                    </motion.p>
+                  )}
                 </motion.div>
                 <motion.div
                   initial={{ opacity: 0, y: 10 }}
@@ -171,21 +319,28 @@ function SignIn() {
                   transition={{ delay: 0.6 }}
                 >
                   <span className="text-gray-600">Password</span>
-                  <Input.Password
-                    placeholder="Enter your password"
-                    className="py-2 mt-1"
-                  />
-                </motion.div>
-                <motion.div
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.6 }}
-                >
-                  <span className="text-gray-600">Confirm Password</span>
-                  <Input.Password
-                    placeholder="Confirm your password"
-                    className="py-2 mt-1"
-                  />
+                  <motion.div
+                    animate={fieldErrors.password ? shakeAnimation : {}}
+                  >
+                    <Input.Password
+                      placeholder="At least 6 characters"
+                      value={user.password}
+                      onChange={(e) =>
+                        setUser({ ...user, password: e.target.value })
+                      }
+                      className={getInputClassName("password")}
+                      size="large"
+                    />
+                  </motion.div>
+                  {fieldErrors.password && (
+                    <motion.p
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="text-red-500 text-sm mt-1"
+                    >
+                      {fieldErrors.password}
+                    </motion.p>
+                  )}
                 </motion.div>
               </div>
             )}
@@ -203,12 +358,14 @@ function SignIn() {
               >
                 <span className="text-gray-600">Remember me</span>
               </Checkbox>
-              <motion.span
-                whileHover={{ scale: 1.05 }}
-                className="text-primary cursor-pointer"
-              >
-                Forget your password?
-              </motion.span>
+              {isSignIn && (
+                <motion.span
+                  whileHover={{ scale: 1.05 }}
+                  className="text-primary cursor-pointer"
+                >
+                  Forgot password?
+                </motion.span>
+              )}
             </motion.div>
           </motion.div>
 
@@ -220,12 +377,19 @@ function SignIn() {
           >
             <motion.div whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.98 }}>
               <Button
-                onClick={() => navigate("/app")}
+                onClick={() => (isSignIn ? signin() : signup())}
                 type="primary"
-                className={`w-full bg-primary text-[#fff] font-semibold  h-auto ${isSignIn ? "py-5" : "py-3"}`}
+                className={`w-full bg-primary hover:bg-primary-dark text-white font-semibold h-12 text-lg`}
                 size="large"
+                disabled={loading}
               >
-                {isSignIn ? "Sign Up" : "Sign Up"}
+                {loading ? (
+                  <AuthAnimation />
+                ) : isSignIn ? (
+                  "Sign In"
+                ) : (
+                  "Create Account"
+                )}
               </Button>
             </motion.div>
 
@@ -246,13 +410,17 @@ function SignIn() {
               transition={{ delay: 1 }}
               className="flex items-center justify-center gap-2"
             >
-              <span className="text-gray-600">{isSignIn ? "Don't have an account?" : "Already have an account?"}</span>
+              <span className="text-gray-600">
+                {isSignIn
+                  ? "Don't have an account?"
+                  : "Already have an account?"}
+              </span>
               <motion.span
                 onClick={() => setIsSignIn((p) => !p)}
                 whileHover={{ scale: 1.05 }}
                 className="text-primary font-semibold cursor-pointer"
               >
-                {isSignIn ? "Sign UP" : "Sign In"}
+                {isSignIn ? "Sign up" : "Sign in"}
               </motion.span>
             </motion.div>
           </motion.div>

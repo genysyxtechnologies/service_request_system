@@ -1,25 +1,10 @@
-import { useState } from "react";
-import NewRequest from "./NewRequest";
-import Tables from "./HomeTable";
-
+import { useSelector } from "react-redux";
+import Dashboard from "../dashboard/Dashboard";
+import Request from "../request/Request";
 function Home() {
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const { isAdmin } = useSelector((state: any) => state.auth);
 
-  const handleSubmit = (values: any) => {
-    console.log("Form submitted:", values);
-    // Handle form submission
-  };
-
-  return (
-    <div className="w-full">
-       <NewRequest 
-        isOpen={isModalOpen} 
-        onClose={() => setIsModalOpen(false)}
-        onSubmit={handleSubmit}
-      />
-      <Tables onItemClick={() => setIsModalOpen(true)} />
-    </div>
-  );
+  return <div className="w-full">{isAdmin ? <Dashboard /> : <Request />}</div>;
 }
 
 export default Home;

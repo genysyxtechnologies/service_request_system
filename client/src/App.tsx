@@ -7,14 +7,24 @@ import Services from "./components/pages/presentation/Services/Services";
 import RequestTable from "./components/pages/presentation/request/RequestTable";
 import Category from "./components/pages/presentation/category/Services";
 import Dashboard from "./components/pages/presentation/dashboard/Dashboard";
+import { Toaster } from "sonner";
+import RouterSecurity from "./RouterSecurity";
 
 function App() {
   return (
     <div className="flex mx-auto">
+      <Toaster position="top-center" richColors />
       <Routes>
         <Route path="/" element={<SignIn />} />
         <Route path="/signup" element={<SignUp />} />
-        <Route path="/app" element={<Presentation />}>
+        <Route
+          path="/app"
+          element={
+            <RouterSecurity>
+              <Presentation />
+            </RouterSecurity>
+          }
+        >
           <Route index element={<Home />} />
           <Route path="services" element={<Services />} />
           <Route path="request" element={<RequestTable />} />
