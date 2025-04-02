@@ -91,7 +91,6 @@ export const useRequest = (token: string, isAdmin?: boolean) => {
             );
 
             if ((response as AxiosData).status === 200) {
-                console.log(response)
                 const data: PaginationData = (response as AxiosData).data;
                 setRequests(data.content);
                 setPagination({
@@ -168,8 +167,7 @@ export const useRequest = (token: string, isAdmin?: boolean) => {
     // UPDATE status
     const updateStatus = async (status: string, requestId: number) => {
         try {
-            const response = await service.updateStatus(`${ENDPOINTS.UPDATE_REQUEST_STATUS}/${requestId}/status`, status);
-            console.log(response);
+            await service.updateStatus(`${ENDPOINTS.UPDATE_REQUEST_STATUS}/${requestId}/status`, status);
         } catch (error) {
             return error;
         }

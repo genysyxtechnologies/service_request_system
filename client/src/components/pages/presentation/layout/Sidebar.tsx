@@ -2,10 +2,11 @@ import "./Sidebar.css";
 import { Tooltip } from "antd";
 import image1 from "../../../../assets/images/signin/image1.png";
 import image2 from "../../../../assets/images/signin/image2.png";
-import image3 from "../../../../assets/images/presentation/image1.png";
 import image4 from "../../../../assets/images/presentation/image2.png";
 import image5 from "../../../../assets/images/presentation/image3.png";
-import image6 from "../../../../assets/images/presentation/image4.png";
+import image6 from "../../../../assets/images/signin/image5.svg"
+
+
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 
@@ -22,7 +23,7 @@ function Sidebar() {
     "Settings",
   ];
 
-  const [sideBarItems, setSideBarItems] = useState([
+  const [sideBarItems, _] = useState([
     {
       title: "Service Requests",
       icon: image2,
@@ -37,6 +38,12 @@ function Sidebar() {
       title: "Settings",
       icon: image5,
       path: "/app",
+      disable: true,
+    },
+    {
+      title: "Logout",
+      icon: image6,
+      path: "/",
     },
   ]);
 
@@ -66,13 +73,14 @@ function Sidebar() {
           <Tooltip
             key={item.title}
             title={item.title}
-            placement="right"
+            placement="right"   
             overlayClassName="custom-tooltip"
             color="#3b82f6"
           >
             <button
+            disabled={item.disable ? true : false}
               onClick={() => navigate(item.path)}
-              className="cursor-pointer group"
+              className={`${item.disable ? 'cursor-not-allowed' : 'cursor-pointer'} group`}
             >
               <img
                 src={item.icon}

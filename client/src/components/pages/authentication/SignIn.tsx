@@ -68,7 +68,7 @@ function SignIn() {
         initial={{ scale: 0.95, y: 20 }}
         animate={{ scale: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.1 }}
-        className="grid grid-cols-1 lg:grid-cols-2 mx-auto md:w-8/12 w-11/12 h-full rounded-lg overflow-auto shadow-xl"
+        className="grid grid-cols-1 lg:grid-cols-2 mx-auto md:w-8/12 w-11/12 h-full rounded-lg overflow-auto"
       >
         {/* Left Section */}
         <motion.div
@@ -119,7 +119,7 @@ function SignIn() {
           initial={{ x: 50 }}
           animate={{ x: 0 }}
           transition={{ duration: 0.5 }}
-          className="bg-white rounded-r-md flex flex-col p-8 justify-center my-auto gap-6"
+          className={`bg-white rounded-r-md flex flex-col p-8 justify-center my-auto gap-6 ${isSignIn ? '' : 'h-full'}`}
         >
           <motion.div
             initial={{ opacity: 0 }}

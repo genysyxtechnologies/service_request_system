@@ -3,6 +3,8 @@ import { Modal, Form, Input, Select, Button, message } from "antd";
 import { useSelector } from "react-redux";
 import { ServiceData } from "../../../../utils/types";
 import { useServices } from "../../../services/useServices";
+import AuthAnimation from "../../../animations/AuthAnimation";
+
 
 const { Option } = Select;
 
@@ -10,16 +12,18 @@ interface UpdateServicesProps {
   visible: boolean;
   onClose: () => void;
   serviceData: ServiceData | null;
+ 
 }
 
 const UpdateServices: React.FC<UpdateServicesProps> = ({
   visible,
   onClose,
   serviceData,
+
 }) => {
   const [form] = Form.useForm();
   const token = useSelector((state: any) => state.auth.token);
-  const { updateService } = useServices(token);
+  const { updateService, loading } = useServices(token);
 
   useEffect(() => {
     if (visible && serviceData) {
@@ -29,9 +33,8 @@ const UpdateServices: React.FC<UpdateServicesProps> = ({
         fields: JSON.stringify(""),
         isActive: serviceData.isActive,
         category: serviceData.categoryName,
-        categoryId: serviceData.id,
+        categoryId: serviceData.categoryId,
       });
-      console.log("serviceData id", serviceData);
     } else {
       form.resetFields();
     }
@@ -40,19 +43,13 @@ const UpdateServices: React.FC<UpdateServicesProps> = ({
   const handleSave = async () => {
     try {
       const values = await form.validateFields();
-      console.log("Updating service with:", {
-        id: serviceData?.id,
-        ...values,
-      });
       values.fields = JSON.stringify("");
-      values.categoryId = serviceData?.id;
-      console.log('CATEGORY ID IS', values.categoryId)
+      values.categoryId = serviceData?.categoryId;
       await updateService(values, serviceData?.id!);
 
       message.success("Service updated successfully");
       onClose();
     } catch (error) {
-      console.error("Validation Failed:", error);
       message.error("Failed to update service");
     }
   };
@@ -109,7 +106,7 @@ const UpdateServices: React.FC<UpdateServicesProps> = ({
             type="primary"
             onClick={handleSave}
           >
-            Update Service
+            {loading ? <AuthAnimation/> : 'Update Service'}
           </Button>
         </div>
       </Form>

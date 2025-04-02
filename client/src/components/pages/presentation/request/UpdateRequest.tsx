@@ -25,7 +25,6 @@ const UpdateRequestStatusModal: React.FC<UpdateRequestStatusModalProps> = ({
   const { updateStatus } = useRequest(token);
 
   const handleOk = async () => {
-    console.log(status);
     setIsSubmitting(true);
     try {
       if (onUpdate) {

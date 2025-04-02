@@ -21,6 +21,13 @@ export const useAuth = () => {
     const navigate = useNavigate();
     const dispatch = useDispatch();
 
+
+    // reset user data
+    const resetUserData = () => {
+        setUser({ firstName: "", lastName: "", username: "", email: "", password: "" });
+        setSignUser({ identifier: "", password: "" });
+    }
+
     const validateSignUp = (): boolean => {
         const errors: Record<string, string> = {};
         if (!user.firstName.trim()) errors.firstName = "First name is required";
@@ -59,6 +66,9 @@ export const useAuth = () => {
             setLoading(false);
             toast.error('Signup failed. Please try again.');
         }
+        finally{
+            resetUserData();
+        }
     }
 
     const signin = async () => {
@@ -83,6 +93,9 @@ export const useAuth = () => {
             setError(error);
             setLoading(false);
             toast.error('Login failed. Please check your credentials.');
+        }
+        finally{
+            resetUserData();
         }
     }
 

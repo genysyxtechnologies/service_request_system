@@ -29,11 +29,6 @@ export class RequestRepository extends ServiceRepository {
         } catch (error) {
             throw error;
         }
-        finally {
-            console.log('REQUEST DATA: ', requestData);
-            console.log('SERVICE ID: ', serviceId);
-            console.log('RAN SUCCESSFULLY')
-        }
     }
 
     // update repository with form data

@@ -1,9 +1,7 @@
 import ServicesTable from "./ServicesTable"
 
 function Services() {
-    const handleItemClick = () => {
-        console.log('Hello')
-      };
+    const handleItemClick = () => {};
 
   return (
     <ServicesTable  onItemClick={handleItemClick}/>

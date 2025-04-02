@@ -38,7 +38,6 @@ const NewService: React.FC<NewServiceProps> = ({
   // watch for visibility canges before adding categiryId
   useEffect(() => {
     if (visible) {
-      console.log(categoryId);
       setServices({...services, categoryId})
     }
   }, [visible]);

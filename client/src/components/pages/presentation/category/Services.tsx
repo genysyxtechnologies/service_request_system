@@ -88,7 +88,7 @@ function Category() {
               transition={{ duration: 0.4, delay: 0.1 }}
               className="bg-white rounded-lg shadow-md p-6"
             >
-              <Services onItemClick={() => {}} />
+              <Services/>
             </motion.div>
           </TabPane>
         </Tabs>

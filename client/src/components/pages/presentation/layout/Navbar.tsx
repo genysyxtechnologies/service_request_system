@@ -10,9 +10,7 @@ function Navbar() {
     { value: "disabled", label: "Disabled", disabled: true },
   ]);
 
-  const handleChange = (value: string) => {
-    console.log(`selected ${value}`);
-  };
+  const handleChange = (value: string) => {};
 
   return (
     <div className="bg-[#fff] rounded-xl flex items-center justify-center h-[5rem] px-4">

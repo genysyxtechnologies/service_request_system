@@ -333,7 +333,7 @@ const NewCategory: React.FC<CreateCategoryProps> = ({
           </Button>
           <Button
             type="primary"
-            onClick={handleSave}
+            onClick=k{handleSave}
             className="h-10 px-6 rounded-lg bg-blue-600 hover:bg-blue-700 text-white shadow-md hover:shadow-lg transition-all duration-200"
           >
             Create Category

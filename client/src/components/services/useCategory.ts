@@ -46,26 +46,19 @@ export const useCategory = (token: string, isAdmin: boolean) => {
                 setAllCategories((response as AxiosData).data as Category[])
                 return (response as AxiosData).data as Category[]
             }
-            else {
-                return toast.error((response as AxiosError).message)
-            }
 
         } catch (error) {
             return error;
         }
         finally {
             setLoading(false);
-            console.log('function ran')
         }
     }
     // UPDATE category
     const updateCategory = async () => {
-        console.log(updateValue, categoryId)
         try {
-            const response = await category.updateCategory(`${ENDPOINTS.UPDATE_CATEGORY}/${categoryId}`, { name: updateValue });
-            console.log(response);
+            await category.updateCategory(`${ENDPOINTS.UPDATE_CATEGORY}/${categoryId}`, { name: updateValue });
         } catch (error) {
-            console.log(error);
             return error;
         }
         finally {

@@ -22,9 +22,7 @@ export class ServiceRepository {
         } catch (error) {
             return error;
         }
-        finally{
-            console.log(endpoint)
-        }
+    
     }
 
     // GET service
@@ -53,7 +51,6 @@ export class ServiceRepository {
             const response = await this.api.put(`${endpoint}/${id}`, data, this.token);
             return response;
         } catch (error) {
-            console.log(error)
             return error;
         }
     }

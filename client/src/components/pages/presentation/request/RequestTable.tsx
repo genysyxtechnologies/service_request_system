@@ -27,10 +27,7 @@ const RequestTable: React.FC = () => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [requestId, setRequestId] = useState<number>(0);
 
-  const handleStatusUpdate = async (status: string) => {
-    // API call or state update here
-    console.log("Updating status to:", status);
-  };
+  const handleStatusUpdate = async (status: string) => {};
 
   useEffect(() => {
     fetchRequests();

@@ -63,6 +63,7 @@ export interface ServiceData {
     fields: string;
     isActive: boolean;
     categoryName: string,
+    categoryId: number,
 }
 
 export interface Service {

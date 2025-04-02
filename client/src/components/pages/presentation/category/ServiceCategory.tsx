@@ -45,7 +45,8 @@ const ServicesCategory = () => {
     null
   );
   const { confirm } = Modal;
-  const { fetchServices, loading, error } = useServices(token);
+  const { fetchServices, loading, setLoading, error, deleteService } =
+    useServices(token);
   const [servicesData, setServicesData] = useState<ServiceItem[]>([]);
   const [totalItems, setTotalItems] = useState<number>(0);
   const [newRequestModal, setNewRequestModal] = useState<boolean>(false);
@@ -54,6 +55,10 @@ const ServicesCategory = () => {
   useEffect(() => {
     loadServices(currentPage, pageSize);
   }, [currentPage, pageSize]);
+
+  useEffect(() => {
+    loadServices(currentPage, pageSize);
+  }, [isModalVisible]);
 
   const loadServices = async (page: number, size: number) => {
     try {
@@ -65,7 +70,7 @@ const ServicesCategory = () => {
           id: item.id,
           name: item.name,
           categoryName: item.categoryName,
-          categoryId: item.id,
+          categoryId: item.categoryId,
           description: item.description,
           isActive: item.isActive,
         }));
@@ -80,8 +85,6 @@ const ServicesCategory = () => {
   };
 
   const handleNewRequestClick = (id: number) => {
-    console.log("New Request for ID:", id);
-    message.info(`New Request initiated for service ID: ${id}`);
     setServiceId(id);
     setNewRequestModal(true);
   };
@@ -91,20 +94,8 @@ const ServicesCategory = () => {
     setModalVisible(true);
   };
 
-  const handleDeleteConfirm = (id: number) => {
-    confirm({
-      title: "Are you sure you want to delete this service?",
-      icon: <ExclamationCircleOutlined className="text-red-500" />,
-      content: "This action cannot be undone.",
-      okText: "Delete",
-      okType: "danger",
-      cancelText: "Cancel",
-      onOk() {
-        console.log("Deleting service with ID:", id);
-        message.success("Service deleted successfully");
-        loadServices(currentPage, pageSize);
-      },
-    });
+  const handleDeleteConfirm = async (id: number) => {
+    await deleteService(id);
   };
 
   const ActionMenu = ({ record }: { record: ServiceItem }) => (
@@ -123,7 +114,10 @@ const ServicesCategory = () => {
       </div>
       <div
         key="delete"
-        onClick={() => handleDeleteConfirm(record.id)}
+        onClick={() => {
+          setSelectedService(record);
+          setDeleteModalVisible(true);
+        }}
         className="flex items-center px-4 py-2 hover:bg-red-50 transition duration-200 rounded-lg cursor-pointer"
       >
         <BsTrash className="mr-2 text-red-500 text-xl" />
@@ -410,11 +404,10 @@ const ServicesCategory = () => {
       <DeleteService
         visible={isDeleteModalVisible}
         onCancel={() => setDeleteModalVisible(false)}
-        onDelete={() => {
-          if (selectedService) {
-            handleDeleteConfirm(selectedService.id);
+        onDelete={async() => {
+          if(selectedService){
+            await deleteService(selectedService.id);
           }
-          setDeleteModalVisible(false);
         }}
       />
       <NewRequest
