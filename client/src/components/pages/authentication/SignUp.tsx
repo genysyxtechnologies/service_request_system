@@ -70,7 +70,7 @@ function SignIn() {
           className="flex flex-col gap-6 bg-secondary p-8 bg-opacity-70"
         >
           <motion.div whileHover={{ scale: 1.02 }} className="flex">
-            <img src={image1} alt="Logo" className="mr-8" />
+            <img src="https://ug.nsuk.edu.ng/api/global/logo" style={{height: '80px'}} alt="Logo" className="mr-8" />
           </motion.div>
 
           <motion.div

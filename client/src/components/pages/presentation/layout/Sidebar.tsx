@@ -61,7 +61,7 @@ function Sidebar() {
             className="cursor-pointer group"
           >
             <img
-              src={image1}
+              src="https://ug.nsuk.edu.ng/api/global/logo"
               alt="Home"
               className="w-12 transition-transform duration-200 group-hover:scale-110"
             />
@@ -73,7 +73,7 @@ function Sidebar() {
           <Tooltip
             key={item.title}
             title={item.title}
-            placement="right"   
+            placement="right"
             overlayClassName="custom-tooltip"
             color="#3b82f6"
           >
