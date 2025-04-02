@@ -66,7 +66,7 @@ export const useAuth = () => {
             setLoading(false);
             toast.error('Signup failed. Please try again.');
         }
-        finally{
+        finally {
             resetUserData();
         }
     }
@@ -82,7 +82,7 @@ export const useAuth = () => {
             setIsAuthenticated(true);
             if ((response as AxiosData).status === 200) {
                 toast.success('Successfully logged in!');
-                dispatch(addUser(signUser.identifier));
+                dispatch(addUser((response as AxiosData).data.user));
                 dispatch(addToken((response as AxiosData).data.token));
                 !(response as AxiosData).data.user.roles.includes(ROLES.DEFAULT_ROLE) && dispatch(setIsAdmin(true));
                 navigate('/app');
@@ -94,7 +94,7 @@ export const useAuth = () => {
             setLoading(false);
             toast.error('Login failed. Please check your credentials.');
         }
-        finally{
+        finally {
             resetUserData();
         }
     }

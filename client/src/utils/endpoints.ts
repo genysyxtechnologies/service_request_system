@@ -14,9 +14,13 @@ export const ENDPOINTS = {
     DELETE_CATEGORY: '/api/v1/categories/:id',
     DELETE_SERVICE: '/api/v1/services',
     DELETE_REQUEST: '/api/v1/requests/:id',
-    SUPER_ADMIN_DASHBOARD:'/api/v1/dashboard/super-admin',
+    SUPER_ADMIN_DASHBOARD: '/api/v1/dashboard/super-admin',
 
+    
     GET_REQUESTER_REQUESTS: '/api/v1/requester/requests',
     GET_REQUESTER_CATEGORIES: '/api/v1/requester/categories',
     UPDATE_REQUEST_STATUS: '/api/v1/requests',
+
+    // USERS
+    GET_USERS: '/api/v1/users/requesters'
 }

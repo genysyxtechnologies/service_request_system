@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { Table, Select, Pagination, Tag, Spin, Empty } from "antd";
 import { motion } from "framer-motion";
 import { useRequest } from "../../../services/useRequest";
@@ -6,6 +6,7 @@ import { useSelector } from "react-redux";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 import UpdateRequestStatusModal from "./UpdateRequest";
+import RequestContext from "../../../../context/request.context/RequestContext";
 
 dayjs.extend(relativeTime);
 
@@ -17,6 +18,7 @@ const statusColors: Record<string, string> = {
 };
 
 const RequestTable: React.FC = () => {
+  const { refreshRequest } = useContext(RequestContext);
   const { token, isAdmin } = useSelector((state: any) => state.auth);
   const [filter, setFilter] = useState<string>("ALL");
   const [selectedRow, setSelectedRow] = useState<number | null>(null);
@@ -29,13 +31,21 @@ const RequestTable: React.FC = () => {
 
   const handleStatusUpdate = async (status: string) => {};
 
-  useEffect(() => {
-    fetchRequests();
-  }, []);
 
   const handleTableChange = (pagination: any) => {
     fetchRequests(pagination.current, pagination.pageSize);
   };
+
+  // LOAD DATA IMMEDIATELY THE COMPONENT MOUNTED
+  useEffect(() => {
+    fetchRequests();
+  }, []);
+
+ 
+// LOAD TABLE DATA AFTER A SUCCESSFULLY UPDATE OF REQUEST
+  useEffect(() => {
+    fetchRequests();
+  }, [refreshRequest]);
 
   const columns = [
     {

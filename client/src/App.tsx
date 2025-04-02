@@ -9,6 +9,8 @@ import Category from "./components/pages/presentation/category/Services";
 import Dashboard from "./components/pages/presentation/dashboard/Dashboard";
 import { Toaster } from "sonner";
 import RouterSecurity from "./RouterSecurity";
+import Users from "./components/pages/presentation/users/Users";
+import RequestContextProvider from "./context/request.context/RequestContextProvider";
 
 function App() {
   return (
@@ -21,7 +23,9 @@ function App() {
           path="/app"
           element={
             <RouterSecurity>
-              <Presentation />
+              <RequestContextProvider>
+                <Presentation />
+              </RequestContextProvider>
             </RouterSecurity>
           }
         >
@@ -30,6 +34,7 @@ function App() {
           <Route path="request" element={<RequestTable />} />
           <Route path="category" element={<Category />} />
           <Route path="dashboard" element={<Dashboard />} />
+          <Route path="users" element={<Users />} />
         </Route>
       </Routes>
     </div>

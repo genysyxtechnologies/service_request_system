@@ -2,7 +2,7 @@ import axios, { AxiosError } from "axios";
 import { handleError } from "./errors";
 
 export class Api {
-    constructor() { }
+    constructor() {};
 
     // POST request
     async post(url: string, data: Record<string, string | any>, token?: string) {

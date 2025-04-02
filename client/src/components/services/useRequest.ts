@@ -1,8 +1,9 @@
-import { useState } from "react";
+import { useContext, useState } from "react";
 import { message } from "antd";
 import { AxiosData, AxiosError } from "../../utils/types";
 import { ENDPOINTS } from "../../utils/endpoints";
 import { RequestRepository } from "../../repositories/request.repository";
+import RequestContext from "../../context/request.context/RequestContext";
 
 interface RequestData {
     requestData: string;
@@ -29,6 +30,7 @@ interface PaginationData {
 
 
 export const useRequest = (token: string, isAdmin?: boolean) => {
+    const {setRefreshRequest} = useContext(RequestContext);
     const [requestForm, setRequestForm] = useState<Omit<RequestData, 'attachment'>>({
         requestData: "",
     });
@@ -167,12 +169,11 @@ export const useRequest = (token: string, isAdmin?: boolean) => {
     // UPDATE status
     const updateStatus = async (status: string, requestId: number) => {
         try {
-            await service.updateStatus(`${ENDPOINTS.UPDATE_REQUEST_STATUS}/${requestId}/status`, status);
+            await service.updateStatus(`${ENDPOINTS.UPDATE_REQUEST_STATUS}/${requestId}/status`, status).then(() => {
+                setRefreshRequest((prev: boolean) => !prev);
+            });
         } catch (error) {
             return error;
-        }
-        finally {
-            await fetchRequests();
         }
     }
     return {

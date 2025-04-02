@@ -1,10 +1,10 @@
 import "./Sidebar.css";
 import { Tooltip } from "antd";
-import image1 from "../../../../assets/images/signin/image1.png";
 import image2 from "../../../../assets/images/signin/image2.png";
 import image4 from "../../../../assets/images/presentation/image2.png";
 import image5 from "../../../../assets/images/presentation/image3.png";
 import image6 from "../../../../assets/images/signin/image5.svg"
+import image7 from "../../../../assets/images/user/image1.svg"
 
 
 import { useNavigate } from "react-router-dom";
@@ -33,6 +33,12 @@ function Sidebar() {
       title: "Manage Categories",
       icon: image4,
       path: "/app/category",
+    },
+    {
+      title: "Users",
+      icon: image7,
+      path: "/app/users",
+      disable: true
     },
     {
       title: "Settings",

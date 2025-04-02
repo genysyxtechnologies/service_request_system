@@ -2,7 +2,6 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { Input, Checkbox, Button } from "antd";
 import type { CheckboxProps } from "antd";
-import image1 from "../../../assets/images/signin/image1.png";
 import image2 from "../../../assets/images/signin/image2.png";
 import image4 from "../../../assets/images/signin/image4.png";
 import "./signin.css";
