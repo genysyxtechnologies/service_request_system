@@ -95,16 +95,7 @@ const NewService: React.FC<NewServiceProps> = ({
           </Select>
         </Form.Item>
 
-        {/*  <Form.Item
-          name="activeStatus"
-          label="Active Status"
-          rules={[{ required: true, message: "Please select the status." }]}
-        >
-          <Select placeholder="Select active status">
-            <Option value="Active">Active</Option>
-            <Option value="Inactive">Inactive</Option>
-          </Select>
-        </Form.Item> */}
+
 
         <div className="flex justify-end mt-5">
           <Button

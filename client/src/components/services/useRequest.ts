@@ -91,6 +91,7 @@ export const useRequest = (token: string, isAdmin?: boolean) => {
             const response = await service.getAllRequests(
                 `${isAdmin ? ENDPOINTS.GET_REQUEST : ENDPOINTS.GET_REQUESTER_REQUESTS}?page=${page - 1}&size=${pageSize}`
             );
+            console.log("RESPONSE IS from REQUEST", response)
 
             if ((response as AxiosData).status === 200) {
                 const data: PaginationData = (response as AxiosData).data;

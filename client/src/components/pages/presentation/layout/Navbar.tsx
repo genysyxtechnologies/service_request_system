@@ -1,19 +1,16 @@
+// components/Navbar.tsx
 import { UserOutlined } from "@ant-design/icons";
 import { Avatar, Input } from "antd";
-import { useEffect } from "react";
+import { motion } from "framer-motion";
 import { CiSearch } from "react-icons/ci";
 import { useSelector } from "react-redux";
-import { motion } from "framer-motion";
+import NotificationDropdown from "../notification/NotificationDropDown";
 
 function Navbar() {
   const { user } = useSelector((state: any) => state.auth);
-  
-  useEffect(() => {
-    console.log(user.fullName);
-  }, [user]);
 
   return (
-    <motion.div 
+    <motion.div
       initial={{ opacity: 0, y: -20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
@@ -33,28 +30,30 @@ function Navbar() {
           </div>
         </div>
 
-        <motion.div 
+        <motion.div
           className="flex items-center gap-3"
           whileHover={{ scale: 1.02 }}
           transition={{ type: "spring", stiffness: 300 }}
         >
+          <NotificationDropdown />
+          
           <motion.div
             initial={{ scale: 0.9 }}
             animate={{ scale: 1 }}
-            transition={{ 
+            transition={{
               type: "spring",
               damping: 6,
-              stiffness: 300
+              stiffness: 300,
             }}
           >
-            <Avatar 
-              shape="square" 
-              size="large" 
-              icon={<UserOutlined />} 
+            <Avatar
+              shape="square"
+              size="large"
+              icon={<UserOutlined />}
               className="shadow-sm hover:shadow-md transition-shadow duration-300"
             />
           </motion.div>
-          <motion.span 
+          <motion.span
             className="font-medium text-gray-700"
             initial={{ opacity: 0, x: 10 }}
             animate={{ opacity: 1, x: 0 }}

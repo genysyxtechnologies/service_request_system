@@ -16,9 +16,7 @@ import {
   BsTrash,
   BsPlusCircle,
 } from "react-icons/bs";
-import { ExclamationCircleOutlined } from "@ant-design/icons";
 import DeleteService from "../Services/DeleteService";
-import image2 from "../../../../assets/images/services/image2.png";
 import { useServices } from "../../../services/useServices";
 import { useSelector } from "react-redux";
 import UpdateServices from "./UpdateServices";
