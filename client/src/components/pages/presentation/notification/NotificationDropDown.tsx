@@ -33,8 +33,8 @@ const NotificationDropdown = () => {
         <div className="flex justify-between items-center p-2 border-b">
           <h3 className="font-semibold text-lg">Notifications</h3>
           {unreadCount > 0 && (
-            <Button 
-              type="link" 
+            <Button
+              type="link"
               size="small"
               onClick={(e) => {
                 e.stopPropagation();
@@ -71,7 +71,11 @@ const NotificationDropdown = () => {
                     avatar={
                       <Avatar
                         src={item.icon || null}
-                        icon={!item.icon && <IoIosNotifications />}
+                        icon={
+                          !item.icon && (
+                            <IoIosNotifications className="text-2xl" />
+                          )
+                        }
                       />
                     }
                     title={
@@ -122,7 +126,7 @@ const NotificationDropdown = () => {
     >
       <motion.div whileHover={{ scale: 1.05 }} className="relative">
         <Badge count={unreadCount} overflowCount={9}>
-          <IoIosNotifications className="text-3xl text-[#9C9C9C] hover:text-[#7a7a7a] transition-colors duration-300" />
+          <IoIosNotifications className="text-4xl text-[#9C9C9C] hover:text-[#7a7a7a] transition-colors duration-300" />
         </Badge>
       </motion.div>
     </Dropdown>

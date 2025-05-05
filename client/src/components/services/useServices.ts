@@ -1,8 +1,9 @@
-import { useState } from "react";
+import { useState, useContext } from "react";
 import { ServiceRepository } from "../../repositories/service.repository";
 import { AxiosData, NewService, ServiceData } from "../../utils/types";
 import { ENDPOINTS } from "../../utils/endpoints";
 import { toast } from "sonner";
+import RequestContext from "../../context/request.context/RequestContext";
 
 export const useServices = (token: string) => {
   const service = new ServiceRepository(token);
@@ -11,6 +12,7 @@ export const useServices = (token: string) => {
     description: "",
     fields: "",
     categoryId: 0,
+    departmentId: 0,
     isActive: true,
   });
   const [loading, setLoading] = useState(false);
@@ -19,8 +21,12 @@ export const useServices = (token: string) => {
   const [serviceId, setServiceId] = useState<number>(0);
   const [dashboad, setDashBoard] = useState<any>(null);
 
+  // get the department id from the context api
+  const { departmentId, setDepartmentId } = useContext(RequestContext);
+
   // post service
   const createService = async () => {
+    services.departmentId = departmentId;
     setLoading(true);
     try {
       const response = await service.createService(
@@ -30,6 +36,7 @@ export const useServices = (token: string) => {
       if (response as AxiosData) {
         toast.success("service created successfully!");
         setLoading(false);
+        setDepartmentId(0);
         return response as AxiosData;
       }
     } catch (error) {
@@ -46,15 +53,13 @@ export const useServices = (token: string) => {
     try {
       const response = await service.getServices(ENDPOINTS.GET_SERVICES);
       if (response as AxiosData) {
-        console.log("RESPONSE IS", response);
         return response as AxiosData;
       }
-      
+
       setLoading(false);
     } catch (error) {
       setError(error);
     } finally {
-      console.log("FETCHING SERVICES")
       setLoading(false);
     }
   };

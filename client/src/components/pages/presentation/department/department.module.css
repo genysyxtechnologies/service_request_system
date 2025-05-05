@@ -1,0 +1,23 @@
+.departmentSelectFilter .ant-select-selector {
+    border-radius: 10px !important;
+    padding: 8px 12px !important;
+    height: auto !important;
+    border: 1px solid #e2e8f0 !important;
+    transition: all 0.3s ease;
+  }
+  
+  .departmentSelectFilter .ant-select-selector:hover {
+    border-color: #3182ce !important;
+    box-shadow: 0 0 0 2px rgba(49, 130, 206, 0.2) !important;
+  }
+  
+  .departmentSelectFilter .ant-select-selection-item {
+    background: #ebf8ff !important;
+    border-radius: 6px !important;
+    border: 1px solid #bee3f8 !important;
+    color: #2b6cb0 !important;
+  }
+  
+  .departmentSelectFilter .ant-select-selection-search-input {
+    height: 30px !important;
+  }

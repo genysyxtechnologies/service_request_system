@@ -21,6 +21,7 @@ import { useServices } from "../../../services/useServices";
 import { useSelector } from "react-redux";
 import UpdateServices from "./UpdateServices";
 import NewRequest from "../home/NewRequest";
+import Department from "../department/department";
 
 interface ServiceItem {
   key: string;
@@ -307,23 +308,7 @@ const ServicesCategory = () => {
             damping: 15,
             duration: 0.15,
           }}
-        >
-          {/* <Button
-            onClick={() => setModalVisible(true)}
-            type="primary"
-            className="flex items-center justify-center gap-2 w-full bg-primary hover:bg-primary-hover text-white font-medium h-10 px-4 rounded-lg transition-all duration-200 shadow-sm hover:shadow-md"
-            size="middle"
-          >
-            <motion.img
-              src={image2}
-              alt="Create service"
-              className="h-5 w-5"
-              whileHover={{ rotate: 5 }}
-              transition={{ type: "spring", stiffness: 300 }}
-            />
-            <span>Create service</span>
-          </Button> */}
-        </motion.div>
+        ></motion.div>
       </div>
 
       <Spin spinning={loading} tip="Loading services..." size="large">
@@ -402,8 +387,8 @@ const ServicesCategory = () => {
       <DeleteService
         visible={isDeleteModalVisible}
         onCancel={() => setDeleteModalVisible(false)}
-        onDelete={async() => {
-          if(selectedService){
+        onDelete={async () => {
+          if (selectedService) {
             await deleteService(selectedService.id);
           }
         }}

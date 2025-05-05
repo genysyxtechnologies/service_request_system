@@ -7,9 +7,17 @@ const RequestContextProvider = ({
   children: React.ReactNode;
 }) => {
   const [refreshRequest, setRefreshRequest] = useState<boolean>(false);
+  const [departmentId, setDepartmentId] = useState<number | null>(null);
 
   return (
-    <RequestContext.Provider value={{ refreshRequest, setRefreshRequest }}>
+    <RequestContext.Provider
+      value={{
+        refreshRequest,
+        setRefreshRequest,
+        departmentId,
+        setDepartmentId,
+      }}
+    >
       {children}
     </RequestContext.Provider>
   );

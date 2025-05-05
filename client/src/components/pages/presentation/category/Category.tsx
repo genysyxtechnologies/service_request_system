@@ -1,6 +1,6 @@
-import { Table, Pagination, Button, Spin, ConfigProvider } from "antd";
+import { Table, Pagination, Button, Spin, ConfigProvider, Modal } from "antd";
 import { motion } from "framer-motion";
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { BsPencilSquare, BsPlusCircle } from "react-icons/bs";
 import NewCategory from "./NewCategory";
 import image2 from "../../../../assets/images/services/image2.png";
@@ -8,6 +8,8 @@ import { useCategory } from "../../../services/useCategory";
 import { useSelector } from "react-redux";
 import NewService from "../Services/NewService";
 import UpdateCategory from "./UpdateCategory";
+import Department from "../department/department";
+import RequestContext from "../../../../context/request.context/RequestContext";
 
 const Services = () => {
   const { token, isAdmin } = useSelector((state: any) => state.auth);
@@ -17,6 +19,8 @@ const Services = () => {
   const [isUpdateModalVisible, setIsUpdateModalVisible] =
     useState<boolean>(false);
   const [isServiceModalVisible, setIsServiceModalVisible] =
+    useState<boolean>(false);
+  const [isDepartmentModalVisible, setDepartmentModalVisible] =
     useState<boolean>(false);
 
   const {
@@ -37,6 +41,16 @@ const Services = () => {
     })();
   }, []);
 
+  // get the departmental id from the context
+  const { departmentId } = useContext(RequestContext);
+
+  useEffect(() => {
+    if (departmentId) {
+      setDepartmentModalVisible(false);
+      setIsServiceModalVisible(true);
+    }
+  }, [departmentId]);
+
   const handleUpdateClick = (record: any) => {
     if (!isAdmin) {
       return;
@@ -48,7 +62,6 @@ const Services = () => {
 
   const handleNewServiceClick = (record: any) => {
     setCategoryId(record.id);
-    setIsServiceModalVisible(true);
   };
 
   // Calculate paginated data
@@ -92,7 +105,10 @@ const Services = () => {
           transition={{ duration: 0.3 }}
         >
           <Button
-            onClick={() => handleNewServiceClick(record)}
+            onClick={() => {
+              setDepartmentModalVisible(true);
+              handleNewServiceClick(record);
+            }}
             type="text"
             className="flex items-center gap-2 text-green-600 hover:text-green-700"
           >
@@ -273,6 +289,14 @@ const Services = () => {
           visible={isServiceModalVisible}
           onClose={() => setIsServiceModalVisible(false)}
         />
+        <Modal
+          className="lg:w-[80%] w-[90%]"
+          open={isDepartmentModalVisible}
+          onCancel={() => setDepartmentModalVisible(false)}
+          footer={null}
+        >
+          <Department showButton={true} />
+        </Modal>
 
         {isUpdateModalVisible && (
           <UpdateCategory

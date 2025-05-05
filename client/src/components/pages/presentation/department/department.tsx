@@ -2,7 +2,6 @@ import {
   Table,
   Input,
   Button,
-  Space,
   Spin,
   Tag,
   Tooltip,
@@ -10,57 +9,53 @@ import {
   message,
 } from "antd";
 import { motion } from "framer-motion";
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useContext } from "react";
 import {
   SyncOutlined,
   SearchOutlined,
   FilterOutlined,
+  PlusOutlined,
 } from "@ant-design/icons";
 import type { ColumnType } from "antd/es/table";
 import type { FilterConfirmProps } from "antd/es/table/interface";
 import useDepartment from "../../../services/useDepartment";
 import { useSelector } from "react-redux";
+import RequestContext from "../../../../context/request.context/RequestContext";
 
 interface DepartmentItem {
   key: string;
   name: string;
   code: string;
+  id: number;
 }
 
 type DataIndex = keyof DepartmentItem;
 
-const Department = () => {
+interface DepartmentProps {
+  showButton?: boolean;
+}
+
+const Department: React.FC<DepartmentProps> = ({ showButton = false }) => {
   const [searchText, setSearchText] = useState("");
   const [searchedColumn, setSearchedColumn] = useState("");
   const [filterMode, setFilterMode] = useState<"search" | "select">("search");
   const [selectedFilter, setSelectedFilter] = useState<string[]>([]);
+  const [selectedDepartments, setSelectedDepartments] = useState<string[]>([]);
   const searchInput = useRef<any>(null);
   const { token } = useSelector((state: any) => state.auth);
-  const { syncDepartments, loading, fetchDepartments, departments, setDepartments } = useDepartment(token);
-
-  // Mock data - replace with your actual data fetching logic
-  useEffect(() => {
-    // Simulate API call
-    setTimeout(() => {
-      const mockData: DepartmentItem[] = [
-        { key: "1", name: "Human Resources", code: "HR" },
-        { key: "2", name: "Information Technology", code: "IT" },
-        { key: "3", name: "Finance", code: "FIN" },
-        { key: "4", name: "Marketing", code: "MKT" },
-        { key: "5", name: "Operations", code: "OPS" },
-        { key: "6", name: "Research and Development", code: "R&D" },
-        { key: "7", name: "Customer Support", code: "CS" },
-        { key: "8", name: "Sales", code: "SALES" },
-        { key: "9", name: "Legal", code: "LEGAL" },
-        { key: "10", name: "Quality Assurance", code: "QA" },
-      ];
-    }, 1000);
-  }, [token]);
+  const { setDepartmentId } = useContext(RequestContext);
+  const {
+    syncDepartments,
+    loading,
+    fetchDepartments,
+    departments,
+    setDepartments,
+  } = useDepartment(token);
 
   // fetch departments
   useEffect(() => {
     (async () => {
-     const departments = await fetchDepartments();
+      const departments = await fetchDepartments();
       setDepartments(departments!);
     })();
   }, []);
@@ -79,6 +74,10 @@ const Department = () => {
     clearFilters();
     setSearchText("");
     setSelectedFilter([]);
+  };
+
+  const handleCreateService = (record: DepartmentItem) => {
+    setDepartmentId(record.id);
   };
 
   const getColumnSearchProps = (
@@ -221,7 +220,7 @@ const Department = () => {
     });
   };
 
-  const columns = [
+  const baseColumns = [
     {
       title: "Department Name",
       dataIndex: "name",
@@ -266,33 +265,45 @@ const Department = () => {
         </motion.span>
       ),
     },
-    {
-      title: "Actions",
-      key: "actions",
-      render: (text: string, record: DepartmentItem, index: number) => (
-        <motion.div
-          initial={{ opacity: 0, scale: 0.8 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{
-            duration: 0.3,
-            delay: index * 0.25,
-            type: "spring",
-          }}
-          whileHover={{ scale: 1.1 }}
-          whileTap={{ scale: 0.9 }}
-        >
-          <Tooltip title="Synchronize Department">
-            <Button
-              type="primary"
-              icon={<SyncOutlined />}
-              onClick={handleSync}
-              className="bg-green-500 hover:bg-green-600 border-green-500"
-            />
-          </Tooltip>
-        </motion.div>
-      ),
-    },
   ];
+
+  // Add the Create Service column only if showButton is true
+  const columns = showButton
+    ? [
+        ...baseColumns,
+        {
+          title: "Actions",
+          key: "actions",
+          render: (text: string, record: DepartmentItem, index: number) => (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{
+                duration: 0.3,
+                delay: index * 0.25,
+                type: "spring",
+              }}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              <Button
+                type="primary"
+                icon={<PlusOutlined />}
+                onClick={() => handleCreateService(record)}
+                className="bg-blue-500 hover:bg-blue-600 border-blue-500"
+              >
+                Create Service
+              </Button>
+            </motion.div>
+          ),
+        },
+      ]
+    : baseColumns;
+
+  const filteredData =
+    selectedDepartments.length > 0
+      ? departments.filter((dept) => selectedDepartments.includes(dept.name))
+      : departments;
 
   return (
     <motion.div
@@ -330,6 +341,72 @@ const Department = () => {
         </motion.div>
       </div>
 
+      {/* New Department Select Filter */}
+      <motion.div
+        initial={{ opacity: 0, y: -10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.3 }}
+        className="mb-6"
+      >
+        <div className="flex items-center gap-4">
+          <motion.div
+            className="flex-1"
+            whileHover={{ scale: 1.005 }}
+            transition={{ duration: 0.2 }}
+          >
+            <Select
+              mode="multiple"
+              placeholder="Filter departments by name"
+              value={selectedDepartments}
+              onChange={setSelectedDepartments}
+              options={departments.map((dept) => ({
+                value: dept.name,
+                label: dept.name,
+              }))}
+              style={{ width: "100%" }}
+              allowClear
+              showSearch
+              filterOption={(input, option) =>
+                (option?.label ?? "")
+                  .toLowerCase()
+                  .includes(input.toLowerCase())
+              }
+              className="[&_.ant-select-selector]:rounded-lg [&_.ant-select-selector]:p-2 [&_.ant-select-selector]:h-auto 
+                          [&_.ant-select-selector]:border [&_.ant-select-selector]:border-gray-200 [&_.ant-select-selector]:transition-all 
+                          [&_.ant-select-selector]:duration-300 [&_.ant-select-selector:hover]:border-blue-500 
+                          [&_.ant-select-selector:hover]:shadow-[0_0_0_2px_rgba(49,130,206,0.2)]
+                          [&_.ant-select-selection-item]:bg-blue-50 [&_.ant-select-selection-item]:rounded-md 
+                          [&_.ant-select-selection-item]:border [&_.ant-select-selection-item]:border-blue-200 
+                          [&_.ant-select-selection-item]:text-blue-800
+                          [&_.ant-select-selection-search-input]:h-8"
+              dropdownStyle={{
+                borderRadius: "12px",
+                boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)",
+              }}
+              suffixIcon={
+                <motion.div whileHover={{ rotate: 90 }}>
+                  <SearchOutlined className="text-gray-400" />
+                </motion.div>
+              }
+            />
+          </motion.div>
+          {selectedDepartments.length > 0 && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ type: "spring", stiffness: 500 }}
+            >
+              <Button
+                onClick={() => setSelectedDepartments([])}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                Clear filters
+              </Button>
+            </motion.div>
+          )}
+        </div>
+      </motion.div>
+
       <Spin spinning={loading} tip="Loading departments..." size="large">
         <motion.div
           initial={{ opacity: 0 }}
@@ -338,8 +415,13 @@ const Department = () => {
         >
           <Table
             columns={columns}
-            dataSource={departments}
-            pagination={{ pageSize: 10 }}
+            dataSource={filteredData}
+            pagination={{
+              pageSize: 10,
+              showSizeChanger: false,
+              position: ["bottomCenter"],
+              className: "mt-4",
+            }}
             className="rounded-xl shadow-sm border border-gray-200"
             loading={loading}
             components={{
@@ -361,6 +443,9 @@ const Department = () => {
                 ),
               },
             }}
+            rowClassName={() =>
+              "hover:bg-gray-50 transition-colors duration-150"
+            }
           />
         </motion.div>
       </Spin>

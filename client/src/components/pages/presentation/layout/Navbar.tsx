@@ -36,7 +36,7 @@ function Navbar() {
           transition={{ type: "spring", stiffness: 300 }}
         >
           <NotificationDropdown />
-          
+
           <motion.div
             initial={{ scale: 0.9 }}
             animate={{ scale: 1 }}

@@ -17,6 +17,7 @@ export interface NewService {
   fields: string;
   categoryId: number;
   isActive: boolean;
+  departmentId: number;
 }
 
 export interface NewCategory {
