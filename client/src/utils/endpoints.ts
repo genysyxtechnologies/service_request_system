@@ -3,7 +3,7 @@ export const ENDPOINTS = {
   CREATE_SERVICE: "/api/v1/services",
   CREATE_REQUEST: "/api/v1/requester/request",
   GET_CATEGORIES: "/api/v1/categories",
-  GET_SERVICES: `/api/v1/services?page=${1}&size=${10}`,
+  GET_SERVICES: `/api/v1/services`,
   GET_REQUESTS: "/api/v1/requests",
   GET_CATEGORY: "/api/v1/categories/:id",
   GET_SERVICE: "/api/v1/services",

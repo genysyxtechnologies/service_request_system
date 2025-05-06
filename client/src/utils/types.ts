@@ -64,6 +64,7 @@ export interface ServiceData {
   isActive: boolean;
   categoryName: string;
   categoryId: number;
+  departmentId: number;
 }
 
 export interface Service {

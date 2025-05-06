@@ -111,7 +111,7 @@ export const useRequest = (token: string, isAdmin?: boolean) => {
     };
 
     // Submit the request
-    const submitRequest = async (serviceId: number) => {
+    const submitRequest = async (serviceId: number, departmentId: number) => {
         if (!requestForm.requestData.trim()) {
             setError("Request data is required");
             return false;
@@ -128,6 +128,7 @@ export const useRequest = (token: string, isAdmin?: boolean) => {
             const response = await service.createRequest(
                 ENDPOINTS.CREATE_REQUEST,
                 serviceId,
+                departmentId,
                 requestForm.requestData,
                 attachment,
                 {

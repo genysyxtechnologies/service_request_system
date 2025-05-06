@@ -5,21 +5,18 @@ import { ServiceData } from "../../../../utils/types";
 import { useServices } from "../../../services/useServices";
 import AuthAnimation from "../../../animations/AuthAnimation";
 
-
 const { Option } = Select;
 
 interface UpdateServicesProps {
   visible: boolean;
   onClose: () => void;
-  serviceData: ServiceData | null;
- 
+  serviceData: ServiceData | null | any;
 }
 
 const UpdateServices: React.FC<UpdateServicesProps> = ({
   visible,
   onClose,
   serviceData,
-
 }) => {
   const [form] = Form.useForm();
   const token = useSelector((state: any) => state.auth.token);
@@ -34,6 +31,7 @@ const UpdateServices: React.FC<UpdateServicesProps> = ({
         isActive: serviceData.isActive,
         category: serviceData.categoryName,
         categoryId: serviceData.categoryId,
+        departmentId: serviceData.departmentId,
       });
     } else {
       form.resetFields();
@@ -45,6 +43,7 @@ const UpdateServices: React.FC<UpdateServicesProps> = ({
       const values = await form.validateFields();
       values.fields = JSON.stringify("");
       values.categoryId = serviceData?.categoryId;
+      values.departmentId = serviceData?.departmentId;
       await updateService(values, serviceData?.id!);
 
       message.success("Service updated successfully");
@@ -106,7 +105,7 @@ const UpdateServices: React.FC<UpdateServicesProps> = ({
             type="primary"
             onClick={handleSave}
           >
-            {loading ? <AuthAnimation/> : 'Update Service'}
+            {loading ? <AuthAnimation /> : "Update Service"}
           </Button>
         </div>
       </Form>

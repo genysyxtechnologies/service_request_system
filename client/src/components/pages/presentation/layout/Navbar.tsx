@@ -4,7 +4,6 @@ import { Avatar, Input } from "antd";
 import { motion } from "framer-motion";
 import { CiSearch } from "react-icons/ci";
 import { useSelector } from "react-redux";
-import NotificationDropdown from "../notification/NotificationDropDown";
 
 function Navbar() {
   const { user } = useSelector((state: any) => state.auth);
@@ -35,8 +34,6 @@ function Navbar() {
           whileHover={{ scale: 1.02 }}
           transition={{ type: "spring", stiffness: 300 }}
         >
-          <NotificationDropdown />
-
           <motion.div
             initial={{ scale: 0.9 }}
             animate={{ scale: 1 }}

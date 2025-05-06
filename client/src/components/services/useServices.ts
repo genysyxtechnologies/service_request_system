@@ -48,14 +48,18 @@ export const useServices = (token: string) => {
   };
 
   // GET services
-  const fetchServices = async () => {
+  const fetchServices = async (departmentId: number) => {
     setLoading(true);
     try {
-      const response = await service.getServices(ENDPOINTS.GET_SERVICES);
+      const response = await service.getServices(
+        `${
+          ENDPOINTS.GET_SERVICES
+        }?departmentId=${departmentId}&page=${1}&size=${10}`
+      );
       if (response as AxiosData) {
+        console.log("response", response);
         return response as AxiosData;
       }
-
       setLoading(false);
     } catch (error) {
       setError(error);
@@ -109,6 +113,7 @@ export const useServices = (token: string) => {
   const updateService = async (services: ServiceData, serviceId: number) => {
     setLoading(true);
     try {
+      console.log("services", services);
       const response = await service.updateService(
         ENDPOINTS.UPDATE_SERVICE,
         serviceId,
@@ -116,14 +121,12 @@ export const useServices = (token: string) => {
       );
       if ((response as AxiosData).status === 200) {
         toast.success("updated successfully");
-        await fetchServices();
       }
       setLoading(false);
     } catch (error) {
       setError(error);
       setLoading(false);
     } finally {
-      await fetchServices();
       setLoading(false);
     }
   };

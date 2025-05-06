@@ -7,6 +7,7 @@ import {
   Button,
   Tooltip,
   Spin,
+  Select,
 } from "antd";
 import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
@@ -21,7 +22,7 @@ import { useServices } from "../../../services/useServices";
 import { useSelector } from "react-redux";
 import UpdateServices from "./UpdateServices";
 import NewRequest from "../home/NewRequest";
-import Department from "../department/department";
+import useDepartment from "../../../services/useDepartment";
 
 interface ServiceItem {
   key: string;
@@ -31,6 +32,13 @@ interface ServiceItem {
   description: string;
   isActive: boolean;
   categoryId: number;
+  departmentId: number;
+}
+
+interface DepartmentItem {
+  id: number;
+  name: string;
+  code: string;
 }
 
 const ServicesCategory = () => {
@@ -43,6 +51,9 @@ const ServicesCategory = () => {
   const [selectedService, setSelectedService] = useState<ServiceItem | null>(
     null
   );
+  const [selectedDepartment, setSelectedDepartment] = useState<number | null>(
+    null
+  );
   const { confirm } = Modal;
   const { fetchServices, loading, setLoading, error, deleteService } =
     useServices(token);
@@ -50,18 +61,39 @@ const ServicesCategory = () => {
   const [totalItems, setTotalItems] = useState<number>(0);
   const [newRequestModal, setNewRequestModal] = useState<boolean>(false);
   const [serviceId, setServiceId] = useState<number>(0);
+  const [departmentId, setDepartmentId] = useState<number>(0);
+  const { fetchDepartments } = useDepartment(token);
+  const [departmentOptions, setDepartmentOptions] = useState<
+    { value: number; label: string }[]
+  >([]);
 
   useEffect(() => {
-    loadServices(currentPage, pageSize);
-  }, [currentPage, pageSize]);
+    const loadDepartments = async () => {
+      const response = await fetchDepartments();
+      if (response && response) {
+        const options = response.map((dept: DepartmentItem) => ({
+          value: dept.id,
+          label: dept.name,
+        }));
+        setDepartmentOptions(options);
+      }
+    };
+    loadDepartments();
+  }, []);
 
   useEffect(() => {
-    loadServices(currentPage, pageSize);
-  }, [isModalVisible]);
+    if (selectedDepartment) {
+      loadServices(currentPage, pageSize, selectedDepartment);
+    }
+  }, [currentPage, pageSize, selectedDepartment]);
 
-  const loadServices = async (page: number, size: number) => {
+  const loadServices = async (
+    page: number,
+    size: number,
+    departmentId: number
+  ) => {
     try {
-      const response = await fetchServices();
+      const response = await fetchServices(departmentId);
       if (response && response.data) {
         const apiData = response.data.content;
         const formattedData = apiData.map((item: any) => ({
@@ -72,29 +104,30 @@ const ServicesCategory = () => {
           categoryId: item.categoryId,
           description: item.description,
           isActive: item.isActive,
+          departmentId: item.departmentId,
         }));
 
         setServicesData(formattedData);
         setTotalItems(response.data.totalElements || 0);
       }
     } catch (err) {
-      console.error("Error loading services:", err);
       message.error("Failed to load services");
     }
   };
 
-  const handleNewRequestClick = (id: number) => {
+  const handleDepartmentChange = (value: number) => {
+    setSelectedDepartment(value);
+  };
+
+  const handleNewRequestClick = (id: number, departmentId: number) => {
     setServiceId(id);
+    setDepartmentId(departmentId);
     setNewRequestModal(true);
   };
 
   const handleEditClick = (record: ServiceItem) => {
     setSelectedService(record);
     setModalVisible(true);
-  };
-
-  const handleDeleteConfirm = async (id: number) => {
-    await deleteService(id);
   };
 
   const ActionMenu = ({ record }: { record: ServiceItem }) => (
@@ -105,7 +138,9 @@ const ServicesCategory = () => {
     >
       <div
         key="edit"
-        onClick={() => handleEditClick(record)}
+        onClick={() => {
+          handleEditClick(record);
+        }}
         className="flex items-center px-4 py-2 hover:bg-blue-50 transition duration-200 rounded-lg cursor-pointer"
       >
         <BsPencil className="mr-2 text-blue-500 text-xl" />
@@ -228,7 +263,9 @@ const ServicesCategory = () => {
           <Button
             type="primary"
             icon={<BsPlusCircle className="mr-1" />}
-            onClick={() => handleNewRequestClick(record.id)}
+            onClick={() =>
+              handleNewRequestClick(record.id, record.departmentId)
+            }
             className="flex items-center bg-green-500 hover:bg-green-600 border-green-500"
           >
             New Request
@@ -300,22 +337,31 @@ const ServicesCategory = () => {
           Services
         </motion.h2>
         <motion.div
-          whileHover={{ scale: 1.03 }}
-          whileTap={{ scale: 0.98 }}
-          transition={{
-            type: "spring",
-            stiffness: 400,
-            damping: 15,
-            duration: 0.15,
-          }}
-        ></motion.div>
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+          className="mb-6"
+        >
+          <Select
+            showSearch
+            placeholder="Select a department"
+            optionFilterProp="children"
+            onChange={handleDepartmentChange}
+            filterOption={(input, option) =>
+              (option?.label ?? "").toLowerCase().includes(input.toLowerCase())
+            }
+            options={departmentOptions}
+            style={{ width: "100%", maxWidth: "400px" }}
+            size="large"
+          />
+        </motion.div>
       </div>
 
       <Spin spinning={loading} tip="Loading services..." size="large">
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ delay: 0.2 }}
+          transition={{ delay: 0.4 }}
         >
           <Table
             columns={columnsServices}
@@ -344,35 +390,35 @@ const ServicesCategory = () => {
             }}
           />
         </motion.div>
-      </Spin>
 
-      {!loading && (
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.4, duration: 0.5 }}
-          className="flex justify-center mt-6"
-        >
-          <Pagination
-            current={currentPage}
-            pageSize={pageSize}
-            total={totalItems}
-            onChange={handlePageChange}
-            showSizeChanger
-            showQuickJumper
-            pageSizeOptions={["10", "20", "50", "100"]}
-            className="[&_.ant-pagination-item-active]:bg-blue-600 [&_.ant-pagination-item-active]:border-blue-600 [&_.ant-pagination-item-active]:text-white"
-            itemRender={(page, type, originalElement) => (
-              <motion.div
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                {originalElement}
-              </motion.div>
-            )}
-          />
-        </motion.div>
-      )}
+        {!loading && servicesData.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.6, duration: 0.5 }}
+            className="flex justify-center mt-6"
+          >
+            <Pagination
+              current={currentPage}
+              pageSize={pageSize}
+              total={totalItems}
+              onChange={handlePageChange}
+              showSizeChanger
+              showQuickJumper
+              pageSizeOptions={["10", "20", "50", "100"]}
+              className="[&_.ant-pagination-item-active]:bg-blue-600 [&_.ant-pagination-item-active]:border-blue-600 [&_.ant-pagination-item-active]:text-white"
+              itemRender={(page, type, originalElement) => (
+                <motion.div
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  {originalElement}
+                </motion.div>
+              )}
+            />
+          </motion.div>
+        )}
+      </Spin>
 
       <UpdateServices
         visible={isModalVisible}
@@ -381,7 +427,6 @@ const ServicesCategory = () => {
           setSelectedService(null);
         }}
         serviceData={selectedService}
-        onSuccess={() => loadServices(currentPage, pageSize)}
       />
 
       <DeleteService
@@ -395,9 +440,13 @@ const ServicesCategory = () => {
       />
       <NewRequest
         serviceId={serviceId}
+        departmentId={departmentId}
         isOpen={newRequestModal}
         onClose={() => setNewRequestModal(false)}
-        onSubmit={() => loadServices(currentPage, pageSize)}
+        onSubmit={() =>
+          selectedDepartment &&
+          loadServices(currentPage, pageSize, selectedDepartment)
+        }
       />
     </motion.div>
   );

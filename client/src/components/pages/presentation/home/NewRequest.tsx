@@ -17,6 +17,7 @@ interface ModalProps {
   onClose: () => void;
   onSubmit: (values: any) => void;
   serviceId: number;
+  departmentId: number;
 }
 
 const NewRequest: React.FC<ModalProps> = ({
@@ -24,6 +25,7 @@ const NewRequest: React.FC<ModalProps> = ({
   onClose,
   onSubmit,
   serviceId,
+  departmentId,
 }) => {
   const [form] = Form.useForm();
   const { token} = useSelector((state: any) => state.auth);
@@ -41,7 +43,7 @@ const NewRequest: React.FC<ModalProps> = ({
   } = useRequest(token);
 
   const handleSubmit = async () => {
-    const success = await submitRequest(serviceId);
+    const success = await submitRequest(serviceId, departmentId);
     if (success) {
       onSubmit({
         requestData: requestForm.requestData,
