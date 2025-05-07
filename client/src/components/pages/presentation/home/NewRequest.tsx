@@ -28,7 +28,7 @@ const NewRequest: React.FC<ModalProps> = ({
   departmentId,
 }) => {
   const [form] = Form.useForm();
-  const { token} = useSelector((state: any) => state.auth);
+  const { token } = useSelector((state: any) => state.auth);
   const {
     requestForm,
     attachment,
@@ -86,7 +86,6 @@ const NewRequest: React.FC<ModalProps> = ({
       },
     }),
   };
-
 
   const fileList = attachment.map((file, index) => ({
     uid: `${index}`,
@@ -189,9 +188,10 @@ const NewRequest: React.FC<ModalProps> = ({
                   className="mb-6"
                 >
                   <Form.Item
+                    style={{ display: "none" }}
                     label={
                       <motion.span
-                        className="text-gray-700 font-medium text-sm md:text-base flex items-center"
+                        className="text-gray-700 font-medium text-sm md:text-base  items-center hidden"
                         whileHover={{ x: 3 }}
                       >
                         Documents{" "}
@@ -242,6 +242,7 @@ const NewRequest: React.FC<ModalProps> = ({
 
                   {attachment.length > 0 && (
                     <motion.div
+                      style={{ display: "none" }}
                       initial={{ opacity: 0, height: 0 }}
                       animate={{ opacity: 1, height: "auto" }}
                       transition={{ duration: 0.3 }}

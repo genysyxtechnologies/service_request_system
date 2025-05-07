@@ -3,9 +3,9 @@ import { Tooltip } from "antd";
 import image2 from "../../../../assets/images/signin/image2.png";
 import image4 from "../../../../assets/images/presentation/image2.png";
 import image5 from "../../../../assets/images/presentation/image3.png";
-import image6 from "../../../../assets/images/signin/image5.svg"
-import image7 from "../../../../assets/images/user/image1.svg"
-
+import image6 from "../../../../assets/images/signin/image5.svg";
+import image7 from "../../../../assets/images/user/image1.svg";
+import image8 from "../../../../assets/images/presentation/image5.svg";
 
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
@@ -35,16 +35,21 @@ function Sidebar() {
       path: "/app/category",
     },
     {
-      title: "Users",
-      icon: image7,
-      path: "/app/users",
-      disable: true
+      title: "Notification",
+      icon: image8,
+      path: "/app/notification",
     },
     {
-      title: "Settings",
+      title: "Requesters",
+      icon: image7,
+      path: "/app/requesters",
+      disable: false,
+    },
+    {
+      title: "Profile",
       icon: image5,
-      path: "/app",
-      disable: true,
+      path: "/app/profile",
+      disable: false,
     },
     {
       title: "Logout",
@@ -84,9 +89,11 @@ function Sidebar() {
             color="#3b82f6"
           >
             <button
-            disabled={item.disable ? true : false}
+              disabled={item.disable ? true : false}
               onClick={() => navigate(item.path)}
-              className={`${item.disable ? 'cursor-not-allowed' : 'cursor-pointer'} group`}
+              className={`${
+                item.disable ? "cursor-not-allowed" : "cursor-pointer"
+              } group`}
             >
               <img
                 src={item.icon}

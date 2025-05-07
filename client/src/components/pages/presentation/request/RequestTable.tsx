@@ -31,7 +31,6 @@ const RequestTable: React.FC = () => {
 
   const handleStatusUpdate = async (status: string) => {};
 
-
   const handleTableChange = (pagination: any) => {
     fetchRequests(pagination.current, pagination.pageSize);
   };
@@ -41,8 +40,7 @@ const RequestTable: React.FC = () => {
     fetchRequests();
   }, []);
 
- 
-// LOAD TABLE DATA AFTER A SUCCESSFULLY UPDATE OF REQUEST
+  // LOAD TABLE DATA AFTER A SUCCESSFULLY UPDATE OF REQUEST
   useEffect(() => {
     fetchRequests();
   }, [refreshRequest]);
@@ -60,7 +58,7 @@ const RequestTable: React.FC = () => {
           className="flex flex-col"
         >
           <p className="font-medium text-gray-800 hover:text-indigo-600 transition-colors cursor-pointer">
-            {text.length > 50 ? `${text.substring(0, 50)}...` : text}
+            {text?.length > 50 ? `${text.substring(0, 50)}...` : text}
           </p>
           <div className="flex items-center mt-1">
             <span className="text-xs text-gray-500 mr-2">
@@ -75,8 +73,8 @@ const RequestTable: React.FC = () => {
     },
     {
       title: "Submitted By",
-      dataIndex: "submittedBy",
-      key: "submittedBy",
+      dataIndex: "userName",
+      key: "userName",
       render: (text: string) => (
         <motion.span whileHover={{ scale: 1.05 }} className="text-gray-600">
           {text}
@@ -227,7 +225,7 @@ const RequestTable: React.FC = () => {
                         <h4 className="font-medium text-gray-700 mb-2">
                           Submitted By
                         </h4>
-                        <p className="text-gray-600">{record.submittedBy}</p>
+                        <p className="text-gray-600">{record.userName}</p>
                       </div>
 
                       <div>

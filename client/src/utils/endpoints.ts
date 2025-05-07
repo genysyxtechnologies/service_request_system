@@ -10,7 +10,7 @@ export const ENDPOINTS = {
   GET_REQUEST: "/api/v1/requests",
   UPDATE_CATEGORY: "/api/v1/categories",
   UPDATE_SERVICE: "/api/v1/services",
- UPDATE_REQUEST : "/api/v1/requests/:id",
+  UPDATE_REQUEST: "/api/v1/requests/:id",
   DELETE_CATEGORY: "/api/v1/categories/:id",
   DELETE_SERVICE: "/api/v1/services",
   DELETE_REQUEST: "/api/v1/requests/:id",
@@ -29,6 +29,10 @@ export const ENDPOINTS = {
 
   // NOTIFICATIONS
   GET_NOTIFICATIONS: "/api/v1/notifications/user/me",
-  MARK_NOTIFICATION_READ: "/api/v1/notifications/{notificationId}/read",
+  MARK_NOTIFICATION_READ: "/api/v1/notifications",
   GET_UNREAD_NOTIFICATIONS: "/api/v1/notifications/user",
+  
+
+  // REQUESTERS
+  GET_REQUESTERS: "/api/v1/users/requesters",
 };

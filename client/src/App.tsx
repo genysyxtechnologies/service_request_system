@@ -9,8 +9,10 @@ import Category from "./components/pages/presentation/category/Services";
 import Dashboard from "./components/pages/presentation/dashboard/Dashboard";
 import { Toaster } from "sonner";
 import RouterSecurity from "./RouterSecurity";
-import Users from "./components/pages/presentation/users/Users";
+import Requesters from "./components/pages/presentation/users/Requesters";
 import RequestContextProvider from "./context/request.context/RequestContextProvider";
+import NotificationsPage from "./components/pages/presentation/notification/NotificationPage";
+import Profile from "./components/pages/presentation/profile/Profile";
 
 function App() {
   return (
@@ -33,8 +35,10 @@ function App() {
           <Route path="services" element={<Services />} />
           <Route path="request" element={<RequestTable />} />
           <Route path="category" element={<Category />} />
+          <Route path="notification" element={<NotificationsPage />} />
           <Route path="dashboard" element={<Dashboard />} />
-          <Route path="users" element={<Users />} />
+          <Route path="requesters" element={<Requesters />} />
+          <Route path="profile" element={<Profile />} />
         </Route>
       </Routes>
     </div>

@@ -22,6 +22,7 @@ export class ServiceRepository {
       const response = await this.api.get(endpoint, this.token);
       return response;
     } catch (error) {
+      console.error("Failed to get service:", error);
       return error;
     }
   };
