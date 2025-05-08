@@ -4,6 +4,15 @@ class RequestersRepository extends RequestRepository {
   constructor(token?: string) {
     super(token);
   }
+
+  updateRequesterPassword(endpoint: string) {
+    try {
+      const response = this.api.put(endpoint, {}, this.token);
+      return response;
+    } catch (error) {
+      return error;
+    }
+  }
 }
 
 export default RequestersRepository;

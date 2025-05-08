@@ -15,10 +15,8 @@ class DepartmentRepository extends ServiceRepository {
         {},
         this.token
       );
-      console.log("response from the root: ", response);
       return response;
     } catch (error) {
-      console.log("error from the root: ", error);
       return error;
     }
   };

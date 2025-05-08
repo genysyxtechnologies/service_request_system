@@ -1,417 +1,262 @@
-import {
-  Table,
-  Pagination,
-  Dropdown,
-  Modal,
-  message,
-  Button,
-  Tooltip,
-  Spin,
-} from "antd";
-import { motion } from "framer-motion";
-import { useEffect, useState } from "react";
-import {
-  BsThreeDotsVertical,
-  BsPencil,
-  BsTrash,
-  BsPlusCircle,
-} from "react-icons/bs";
-import DeleteService from "../Services/DeleteService";
-import { useServices } from "../../../services/useServices";
-import { useSelector } from "react-redux";
-import UpdateServices from "./UpdateServices";
-import NewRequest from "../home/NewRequest";
-import useDepartment from "../../../services/useDepartment";
+import React, { useState, useEffect } from 'react';
+import { Form, Input, Button, message, Card, Avatar, Space, Divider } from 'antd';
+import { UserOutlined, MailOutlined, EditOutlined, CheckOutlined } from '@ant-design/icons';
+import { motion, AnimatePresence } from 'framer-motion';
+import { useForm } from 'antd/es/form/Form';
 
-interface ServiceItem {
-  key: string;
-  id: number;
-  name: string;
-  categoryName: string;
-  description: string;
-  isActive: boolean;
-  categoryId: number;
-  departmentId: number;
+interface UserUpdateFormProps {
+  username: string;
+  email: string;
+  avatar?: string;
+  onUpdate?: (values: { username: string; email: string }) => Promise<void>;
 }
 
-const ServicesCategory = () => {
-  const { token } = useSelector((state: any) => state.auth);
-  const [currentPage, setCurrentPage] = useState<number>(1);
-  const [pageSize, setPageSize] = useState<number>(10);
-  const [visibleDropdown, setVisibleDropdown] = useState<string | null>(null);
-  const [isModalVisible, setModalVisible] = useState(false);
-  const [isDeleteModalVisible, setDeleteModalVisible] = useState(false);
-  const [selectedService, setSelectedService] = useState<ServiceItem | null>(
-    null
-  );
-  const { confirm } = Modal;
-  const { fetchServices, loading, setLoading, error, deleteService } =
-    useServices(token);
-  const [servicesData, setServicesData] = useState<ServiceItem[]>([]);
-  const [totalItems, setTotalItems] = useState<number>(0);
-  const [newRequestModal, setNewRequestModal] = useState<boolean>(false);
-  const [serviceId, setServiceId] = useState<number>(0);
-  const [departmentId, setDepartmentId] = useState<number>(0);
-  const { fetchDepartments, departments, setDepartments } = useDepartment(token);
-
-useEffect(() => {
-(async () => {
-  const response = await fetchDepartments();
-  console.log("response", response);
-})()
-}, []);
+const UpdateUserForm: React.FC<UserUpdateFormProps> = ({ 
+  username: initialUsername, 
+  email: initialEmail,
+  avatar,
+  onUpdate
+}) => {
+  const [form] = useForm();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [currentAvatar, setCurrentAvatar] = useState(avatar);
 
   useEffect(() => {
-    loadServices(currentPage, pageSize);
-  }, [currentPage, pageSize]);
+    form.setFieldsValue({
+      username: initialUsername,
+      email: initialEmail
+    });
+  }, [initialUsername, initialEmail, form]);
 
-  useEffect(() => {
-    loadServices(currentPage, pageSize);
-  }, [isModalVisible]);
-
-  const loadServices = async (page: number, size: number) => {
+  const handleSubmit = async (values: { username: string; email: string }) => {
+    setIsSubmitting(true);
     try {
-      const response = await fetchServices();
-      if (response && response.data) {
-        const apiData = response.data.content;
-        const formattedData = apiData.map((item: any) => ({
-          key: item.id.toString(),
-          id: item.id,
-          name: item.name,
-          categoryName: item.categoryName,
-          categoryId: item.categoryId,
-          description: item.description,
-          isActive: item.isActive,
-          departmentId: item.departmentId,
-        }));
-
-        setServicesData(formattedData);
-        setTotalItems(response.data.totalElements || 0);
+      if (onUpdate) {
+        await onUpdate(values);
       }
-    } catch (err) {
-      message.error("Failed to load services");
+      message.success({
+        content: (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+          >
+            Profile updated successfully!
+          </motion.div>
+        ),
+        duration: 2,
+      });
+      setIsEditing(false);
+    } catch (error) {
+      message.error({
+        content: (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+          >
+            Failed to update profile. Please try again.
+          </motion.div>
+        ),
+        duration: 2,
+      });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
-  const handleNewRequestClick = (id: number, departmentId: number) => {
-    setServiceId(id);
-    setDepartmentId(departmentId);
-    setNewRequestModal(true);
+  const containerVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        duration: 0.5,
+        ease: "easeOut",
+        when: "beforeChildren",
+        staggerChildren: 0.1
+      }
+    }
   };
 
-  const handleEditClick = (record: ServiceItem) => {
-    setSelectedService(record);
-    setModalVisible(true);
+  const itemVariants = {
+    hidden: { opacity: 0, y: 10 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        duration: 0.5,
+        ease: "easeOut"
+      }
+    }
   };
 
-  const ActionMenu = ({ record }: { record: ServiceItem }) => (
-    <motion.div
-      initial={{ opacity: 0, y: -10 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="rounded-lg shadow-xl border border-gray-200 bg-white flex flex-col space-y-1 p-2"
-    >
-      <div
-        key="edit"
-        onClick={() => {
-          handleEditClick(record);
-        }}
-        className="flex items-center px-4 py-2 hover:bg-blue-50 transition duration-200 rounded-lg cursor-pointer"
-      >
-        <BsPencil className="mr-2 text-blue-500 text-xl" />
-        <span className="text-gray-700 font-medium">Edit Service</span>
-      </div>
-      <div
-        key="delete"
-        onClick={() => {
-          setSelectedService(record);
-          setDeleteModalVisible(true);
-        }}
-        className="flex items-center px-4 py-2 hover:bg-red-50 transition duration-200 rounded-lg cursor-pointer"
-      >
-        <BsTrash className="mr-2 text-red-500 text-xl" />
-        <span className="text-gray-700 font-medium">Delete Service</span>
-      </div>
-    </motion.div>
-  );
-
-  const columnsServices = [
-    {
-      title: "Name",
-      dataIndex: "name",
-      key: "name",
-      render: (text: string, _: ServiceItem, index: number) => (
-        <motion.div
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{
-            duration: 0.5,
-            delay: index * 0.05,
-            type: "spring",
-            stiffness: 100,
-          }}
-          className="font-medium text-gray-800"
-          whileHover={{ x: 5 }}
-        >
-          {text}
-        </motion.div>
-      ),
-    },
-    {
-      title: "Description",
-      dataIndex: "description",
-      key: "description",
-      render: (text: string, _: ServiceItem, index: number) => (
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{
-            duration: 0.5,
-            delay: index * 0.1,
-            type: "spring",
-            damping: 10,
-          }}
-          className="text-gray-600 line-clamp-2"
-        >
-          {text}
-        </motion.div>
-      ),
-    },
-    {
-      title: "Category",
-      dataIndex: "categoryName",
-      key: "category",
-      render: (text: string, _: ServiceItem, index: number) => (
-        <motion.span
-          initial={{ opacity: 0, scale: 0.8 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{
-            duration: 0.3,
-            delay: index * 0.15,
-            type: "spring",
-            stiffness: 200,
-          }}
-          whileHover={{ scale: 1.1 }}
-          className="px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800"
-        >
-          {text}
-        </motion.span>
-      ),
-    },
-    {
-      title: "Status",
-      dataIndex: "isActive",
-      key: "status",
-      render: (isActive: boolean, record: ServiceItem, index: number) => (
-        <motion.span
-          initial={{ opacity: 0, scale: 0.8 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{
-            duration: 0.5,
-            delay: index * 0.2,
-            type: "spring",
-          }}
-          whileHover={{ scale: 1.1 }}
-          className={`px-3 py-1 rounded-full text-xs font-medium ${
-            isActive ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"
-          }`}
-        >
-          {isActive ? "Active" : "Inactive"}
-        </motion.span>
-      ),
-    },
-    {
-      title: "New Request",
-      key: "newRequest",
-      render: (text: string, record: ServiceItem, index: number) => (
-        <motion.div
-          initial={{ opacity: 0, scale: 0.8 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{
-            duration: 0.3,
-            delay: index * 0.25,
-            type: "spring",
-          }}
-          whileHover={{ scale: 1.1 }}
-          whileTap={{ scale: 0.9 }}
-        >
-          <Button
-            type="primary"
-            icon={<BsPlusCircle className="mr-1" />}
-            onClick={() =>
-              handleNewRequestClick(record.id, record.departmentId)
-            }
-            className="flex items-center bg-green-500 hover:bg-green-600 border-green-500"
-          >
-            New Request
-          </Button>
-        </motion.div>
-      ),
-    },
-    {
-      title: "",
-      key: "action",
-      render: (text: string, record: ServiceItem, index: number) => (
-        <Tooltip
-          title="Actions"
-          placement="right"
-          overlayClassName="custom-tooltip"
-          color="#3b82f6"
-        >
-          <Button onClick={(e) => e.stopPropagation()}>
-            <Dropdown
-              overlay={<ActionMenu record={record} />}
-              trigger={["click"]}
-              open={visibleDropdown === record.key}
-              onOpenChange={(visible) => {
-                setVisibleDropdown(visible ? record.key : null);
-              }}
-              placement="bottomRight"
-              overlayClassName="custom-dropdown"
-            >
-              <motion.div
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{
-                  duration: 0.3,
-                  delay: index * 0.3,
-                  type: "spring",
-                }}
-                whileHover={{ scale: 1.2, rotate: 10 }}
-                whileTap={{ scale: 0.9 }}
-              >
-                <BsThreeDotsVertical className="text-gray-500 hover:text-gray-700" />
-              </motion.div>
-            </Dropdown>
-          </Button>
-        </Tooltip>
-      ),
-    },
-  ];
-
-  const handlePageChange = (page: number, pageSize?: number) => {
-    setCurrentPage(page);
-    if (pageSize) {
-      setPageSize(pageSize);
+  const cardVariants = {
+    rest: { scale: 1 },
+    hover: { 
+      scale: 1.01,
+      boxShadow: "0px 10px 30px rgba(0, 0, 0, 0.1)"
     }
   };
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5 }}
-      className="flex flex-col p-6"
+      initial="hidden"
+      animate="visible"
+      variants={containerVariants}
+      className="flex justify-center items-center min-h-screen p-4 bg-gradient-to-br from-blue-50 to-gray-50"
     >
-      <div className="flex items-center justify-between w-full">
-        <motion.h2
-          className="text-2xl md:text-3xl mb-6 text-gray-700 font-semibold"
-          whileHover={{ scale: 1.01 }}
-          transition={{ duration: 0.2 }}
-        >
-          Services
-        </motion.h2>
-        <motion.div
-          whileHover={{ scale: 1.03 }}
-          whileTap={{ scale: 0.98 }}
-          transition={{
-            type: "spring",
-            stiffness: 400,
-            damping: 15,
-            duration: 0.15,
-          }}
-        ></motion.div>
-      </div>
-
-      <Spin spinning={loading} tip="Loading services..." size="large">
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.2 }}
-        >
-          <Table
-            columns={columnsServices}
-            dataSource={servicesData}
-            pagination={false}
-            className="rounded-xl shadow-sm border border-gray-200"
-            loading={loading}
-            components={{
-              body: {
-                row: ({ children, ...props }) => (
-                  <motion.tr
-                    {...props}
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.3 }}
-                    whileHover={{
-                      backgroundColor: "rgba(249, 250, 251, 0.8)",
-                      transition: { duration: 0.1 },
-                    }}
-                    className="group"
-                  >
-                    {children}
-                  </motion.tr>
-                ),
-              },
-            }}
-          />
-        </motion.div>
-      </Spin>
-
-      {!loading && (
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.4, duration: 0.5 }}
-          className="flex justify-center mt-6"
-        >
-          <Pagination
-            current={currentPage}
-            pageSize={pageSize}
-            total={totalItems}
-            onChange={handlePageChange}
-            showSizeChanger
-            showQuickJumper
-            pageSizeOptions={["10", "20", "50", "100"]}
-            className="[&_.ant-pagination-item-active]:bg-blue-600 [&_.ant-pagination-item-active]:border-blue-600 [&_.ant-pagination-item-active]:text-white"
-            itemRender={(page, type, originalElement) => (
-              <motion.div
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                {originalElement}
-              </motion.div>
-            )}
-          />
-        </motion.div>
-      )}
-
-      <UpdateServices
-        visible={isModalVisible}
-        onClose={() => {
-          setModalVisible(false);
-          setSelectedService(null);
-        }}
-        serviceData={selectedService}
-      />
-
-      <DeleteService
-        visible={isDeleteModalVisible}
-        onCancel={() => setDeleteModalVisible(false)}
-        onDelete={async () => {
-          if (selectedService) {
-            await deleteService(selectedService.id);
+      <motion.div
+        variants={cardVariants}
+        initial="rest"
+        whileHover="hover"
+        className="w-full max-w-md"
+      >
+        <Card
+          title={
+            <motion.div 
+              variants={itemVariants}
+              className="flex items-center justify-between"
+            >
+              <div className="flex items-center gap-4">
+                <Avatar 
+                  size={64} 
+                  src={currentAvatar} 
+                  icon={<UserOutlined />} 
+                  className="bg-blue-100 text-blue-600 shadow-md"
+                />
+                <div>
+                  <h2 className="text-xl font-semibold text-gray-800">Profile Settings</h2>
+                  <p className="text-gray-500 text-sm">Update your account information</p>
+                </div>
+              </div>
+              {!isEditing && (
+                <Button
+                  type="text"
+                  icon={<EditOutlined />}
+                  onClick={() => setIsEditing(true)}
+                  className="text-blue-500 hover:text-blue-700"
+                >
+                  Edit
+                </Button>
+              )}
+            </motion.div>
           }
-        }}
-      />
-      <NewRequest
-        serviceId={serviceId}
-        departmentId={departmentId}
-        isOpen={newRequestModal}
-        onClose={() => setNewRequestModal(false)}
-        onSubmit={() => loadServices(currentPage, pageSize)}
-      />
+          bordered={false}
+          className="shadow-lg rounded-2xl overflow-hidden border border-gray-100 bg-white"
+          headStyle={{ borderBottom: 'none' }}
+        >
+          <Form
+            form={form}
+            layout="vertical"
+            onFinish={handleSubmit}
+            className="space-y-6"
+          >
+            <AnimatePresence mode="wait">
+              {isEditing ? (
+                <>
+                  <motion.div
+                    key="editing-form"
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: 'auto' }}
+                    exit={{ opacity: 0, height: 0 }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    <motion.div variants={itemVariants}>
+                      <Form.Item
+                        name="username"
+                        label={<span className="text-gray-600 font-medium">Username</span>}
+                        rules={[
+                          { required: true, message: 'Please input your username!' },
+                          { min: 3, message: 'Username must be at least 3 characters!' }
+                        ]}
+                      >
+                        <Input 
+                          prefix={<UserOutlined className="text-gray-400" />} 
+                          placeholder="Enter your username" 
+                          className="py-3 px-4 rounded-xl border-gray-300 hover:border-blue-400 focus:border-blue-500 focus:shadow-blue-100"
+                        />
+                      </Form.Item>
+                    </motion.div>
+
+                    <motion.div variants={itemVariants}>
+                      <Form.Item
+                        name="email"
+                        label={<span className="text-gray-600 font-medium">Email</span>}
+                        rules={[
+                          { required: true, message: 'Please input your email!' },
+                          { type: 'email', message: 'Please enter a valid email!' }
+                        ]}
+                      >
+                        <Input 
+                          prefix={<MailOutlined className="text-gray-400" />} 
+                          placeholder="Enter your email" 
+                          className="py-3 px-4 rounded-xl border-gray-300 hover:border-blue-400 focus:border-blue-500 focus:shadow-blue-100"
+                        />
+                      </Form.Item>
+                    </motion.div>
+
+                    <motion.div 
+                      variants={itemVariants}
+                      className="flex justify-end gap-3 pt-2"
+                    >
+                      <Button
+                        onClick={() => setIsEditing(false)}
+                        className="h-10 px-6 rounded-lg border border-gray-300 text-gray-600 hover:text-gray-800"
+                      >
+                        Cancel
+                      </Button>
+                      <Button
+                        type="primary"
+                        htmlType="submit"
+                        loading={isSubmitting}
+                        icon={<CheckOutlined />}
+                        className="h-10 px-6 rounded-lg bg-blue-600 hover:bg-blue-700 border-none font-medium shadow-md transition-all duration-300"
+                      >
+                        Save Changes
+                      </Button>
+                    </motion.div>
+                  </motion.div>
+                </>
+              ) : (
+                <motion.div
+                  key="view-mode"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.3 }}
+                  className="space-y-6"
+                >
+                  <motion.div variants={itemVariants}>
+                    <div className="mb-1 text-sm text-gray-500 font-medium">Username</div>
+                    <div className="p-3 bg-gray-50 rounded-lg text-gray-800 font-medium">
+                      {initialUsername}
+                    </div>
+                  </motion.div>
+
+                  <motion.div variants={itemVariants}>
+                    <div className="mb-1 text-sm text-gray-500 font-medium">Email</div>
+                    <div className="p-3 bg-gray-50 rounded-lg text-gray-800 font-medium">
+                      {initialEmail}
+                    </div>
+                  </motion.div>
+
+                  <motion.div 
+                    variants={itemVariants}
+                    className="pt-4"
+                  >
+                    <Divider className="my-4" />
+                    <div className="text-xs text-gray-400 text-center">
+                      Last updated: {new Date().toLocaleDateString()}
+                    </div>
+                  </motion.div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </Form>
+        </Card>
+      </motion.div>
     </motion.div>
   );
 };
 
-export default ServicesCategory;
+export default UpdateUserForm;

@@ -97,7 +97,6 @@ const UpdateCategory: React.FC<UpdateCategoryProps> = ({
 
   useEffect(() => {
     if (visible) {
-      console.log("NAME FROM ROOT", name);
       form.setFieldsValue({
         categoryName: name,
       });

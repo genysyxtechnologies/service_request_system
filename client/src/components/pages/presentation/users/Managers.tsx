@@ -1,12 +1,12 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useSelector } from "react-redux";
-import { 
-  Table, 
-  Card, 
-  Typography, 
-  Space, 
-  Button, 
-  Input, 
+import {
+  Table,
+  Card,
+  Typography,
+  Space,
+  Button,
+  Input,
   Tag,
   Spin,
   Alert,
@@ -16,11 +16,11 @@ import {
   Menu,
   Avatar,
   Badge,
-  Modal
+  Modal,
 } from "antd";
-import { 
-  SearchOutlined, 
-  ReloadOutlined, 
+import {
+  SearchOutlined,
+  ReloadOutlined,
   FilterOutlined,
   UserOutlined,
   MailOutlined,
@@ -32,29 +32,34 @@ import {
   DeleteOutlined,
   PlusOutlined,
   CrownOutlined,
-  CheckCircleOutlined
+  CheckCircleOutlined,
+  LockOutlined,
 } from "@ant-design/icons";
 import { motion, AnimatePresence } from "framer-motion";
 import { debounce } from "lodash";
 import useManagers, { Manager } from "../../../services/useManagers";
+import useRequesters from "../../../services/useRequesters";
+import UpdateUserForm from "./UpdateUser";
+import image1 from "../../../../assets/images/presentation/image3.png";
 
 const { Title, Text } = Typography;
 
 const statusColors = {
-  active: 'green',
-  inactive: 'red'
+  active: "green",
+  inactive: "red",
 };
 
 const roleColors = {
-  admin: 'purple',
-  manager: 'blue',
-  supervisor: 'cyan'
+  admin: "purple",
+  manager: "blue",
+  supervisor: "cyan",
 };
 
 const ManagersTable: React.FC = () => {
   const { token } = useSelector((state: any) => state.auth);
   const { fetchManagers, loading, error } = useManagers(token);
-  
+  const { resetPassword } = useRequesters(token);
+
   const [data, setData] = useState<Manager[]>([]);
   const [filteredData, setFilteredData] = useState<Manager[]>([]);
   const [pagination, setPagination] = useState({
@@ -66,19 +71,21 @@ const ManagersTable: React.FC = () => {
   const [refreshing, setRefreshing] = useState(false);
   const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
   const [isCreateModalVisible, setIsCreateModalVisible] = useState(false);
+  const [isUpdateModalVisible, setIsUpdateModalVisible] = useState(false);
+  const [selectedManager, setSelectedManager] = useState<Manager | null>(null);
 
   const fetchData = async (page = 1, pageSize = 10, search = "") => {
     try {
       setRefreshing(true);
       const response = await fetchManagers(page - 1, pageSize, search);
-      
+
       if (response?.content) {
-        const managersWithStatus = response.content.map(manager => ({
+        const managersWithStatus = response.content.map((manager: Manager) => ({
           ...manager,
-          status: manager.status || 'active',
-          role: manager.role || 'manager'
+          status: manager.status || "active",
+          role: manager.role || "manager",
         }));
-        
+
         setData(managersWithStatus);
         setFilteredData(managersWithStatus);
         setPagination({
@@ -137,14 +144,22 @@ const ManagersTable: React.FC = () => {
 
   const actionMenu = (record: Manager) => (
     <Menu>
-      <Menu.Item key="view" icon={<EyeOutlined />}>
-        View Details
+      <Menu.Item
+        key="edit"
+        icon={<LockOutlined />}
+        onClick={async () => await resetPassword(record.id)}
+      >
+        Reset Password
       </Menu.Item>
-      <Menu.Item key="edit" icon={<EditOutlined />}>
-        Edit Manager
-      </Menu.Item>
-      <Menu.Item key="delete" icon={<DeleteOutlined />} danger>
-        Deactivate
+      <Menu.Item
+        key="edit"
+        icon={<EditOutlined />}
+        onClick={async () => {
+          setSelectedManager(record);
+          setIsUpdateModalVisible(true);
+        }}
+      >
+        Edit
       </Menu.Item>
     </Menu>
   );
@@ -178,7 +193,10 @@ const ManagersTable: React.FC = () => {
           <div>
             <div className="font-medium">{text}</div>
             {record.role && (
-              <Tag color={roleColors[record.role.toLowerCase()] || 'default'} className="text-xs">
+              <Tag
+                color={roleColors[record.role.toLowerCase()] || "default"}
+                className="text-xs"
+              >
                 {record.role}
               </Tag>
             )}
@@ -198,7 +216,10 @@ const ManagersTable: React.FC = () => {
       key: "email",
       render: (email: string) => (
         <Tooltip title="Click to email">
-          <a href={`mailto:${email}`} className="text-blue-500 hover:text-blue-700">
+          <a
+            href={`mailto:${email}`}
+            className="text-blue-500 hover:text-blue-700"
+          >
             {email}
           </a>
         </Tooltip>
@@ -210,22 +231,22 @@ const ManagersTable: React.FC = () => {
       key: "status",
       width: 120,
       render: (status: string) => (
-        <Badge 
-          status={status === 'active' ? 'success' : 'error'} 
+        <Badge
+          status={status === "active" ? "success" : "error"}
           text={
             <span className="capitalize">
-              {status === 'active' ? (
+              {status === "active" ? (
                 <span className="text-green-600">Active</span>
               ) : (
                 <span className="text-red-600">Inactive</span>
               )}
             </span>
-          } 
+          }
         />
       ),
       filters: [
-        { text: 'Active', value: 'active' },
-        { text: 'Inactive', value: 'inactive' },
+        { text: "Active", value: "active" },
+        { text: "Inactive", value: "inactive" },
       ],
       onFilter: (value: any, record: Manager) => record.status === value,
     },
@@ -233,9 +254,9 @@ const ManagersTable: React.FC = () => {
       title: "Actions",
       key: "actions",
       width: 80,
-      fixed: 'right' as const,
+      fixed: "right" as const,
       render: (_: any, record: Manager) => (
-        <Dropdown overlay={actionMenu(record)} trigger={['click']}>
+        <Dropdown overlay={actionMenu(record)} trigger={["click"]}>
           <Button type="text" icon={<MoreOutlined />} />
         </Dropdown>
       ),
@@ -289,9 +310,10 @@ const ManagersTable: React.FC = () => {
                     loading={refreshing}
                   />
                 </Tooltip>
-                <Button icon={<DownloadOutlined />}>Export</Button>
-                <Button 
-                  type="primary" 
+                {/* <Button icon={<DownloadOutlined />}>Export</Button> */}
+                <Button
+                  disabled
+                  type="primary"
                   icon={<PlusOutlined />}
                   onClick={showCreateModal}
                 >
@@ -322,9 +344,9 @@ const ManagersTable: React.FC = () => {
           </AnimatePresence> */}
         </div>
 
-        <Spin 
-          spinning={loading} 
-          tip="Loading managers..." 
+        <Spin
+          spinning={loading}
+          tip="Loading managers..."
           indicator={<ReloadOutlined spin />}
           className="pt-6"
         >
@@ -351,8 +373,8 @@ const ManagersTable: React.FC = () => {
                     </Text>
                   ),
                   pageSizeOptions: ["10", "20", "50", "100"],
-                  position: ['bottomRight'],
-                  className: 'px-6 py-3'
+                  position: ["bottomRight"],
+                  className: "px-6 py-3",
                 }}
                 onChange={handleTableChange}
                 scroll={{ x: true }}
@@ -362,16 +384,18 @@ const ManagersTable: React.FC = () => {
                       image={Empty.PRESENTED_IMAGE_SIMPLE}
                       description={
                         <Text type="secondary">
-                          {searchText ? 'No matching managers found' : 'No managers available'}
+                          {searchText
+                            ? "No matching managers found"
+                            : "No managers available"}
                         </Text>
                       }
                     />
                   ),
                 }}
                 className="ant-table-striped"
-                rowClassName={(record, index) => 
+                rowClassName={(record, index) =>
                   `hover:bg-blue-50 transition-colors duration-200 ${
-                    index % 2 === 0 ? 'bg-gray-50' : ''
+                    index % 2 === 0 ? "bg-gray-50" : ""
                   }`
                 }
               />
@@ -388,15 +412,15 @@ const ManagersTable: React.FC = () => {
             <span>Create New Manager</span>
           </Space>
         }
-        visible={isCreateModalVisible}
+        open={isCreateModalVisible}
         onCancel={handleCreateCancel}
         footer={[
           <Button key="back" onClick={handleCreateCancel}>
             Cancel
           </Button>,
-          <Button 
-            key="submit" 
-            type="primary" 
+          <Button
+            key="submit"
+            type="primary"
             onClick={handleCreateSubmit}
             icon={<CheckCircleOutlined />}
           >
@@ -405,11 +429,28 @@ const ManagersTable: React.FC = () => {
         ]}
         width={700}
       >
-        <div className="p-4">
-          <p>Manager creation form would go here with all required fields.</p>
-          {/* Add your form components here */}
-        </div>
+        <div className="p-4">{/*  create manager component */}</div>
       </Modal>
+      {/* Update Manager Modal */}
+      <Modal
+        title={
+          <Space>
+            <UserOutlined />
+            <span>Update Manager</span>
+          </Space>
+        }
+        open={isUpdateModalVisible}
+        onCancel={() => setIsUpdateModalVisible(false)}
+        footer={null}
+        width={700}
+      >
+        <UpdateUserForm
+          username={selectedManager?.username || ""}
+          email={selectedManager?.email || ""}
+          avatar={image1}
+        />
+      </Modal>
+      {/*  */}
     </motion.div>
   );
 };

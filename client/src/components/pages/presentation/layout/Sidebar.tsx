@@ -9,9 +9,11 @@ import image8 from "../../../../assets/images/presentation/image5.svg";
 
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
+import { useSelector } from "react-redux";
 
 function Sidebar() {
   const navigate = useNavigate();
+  const { isAdmin } = useSelector((state: any) => state.auth);
 
   // Tooltip content for each button
   const tooltips = [
@@ -21,6 +23,7 @@ function Sidebar() {
     "Manage Categories",
     "Analytics Dashboard",
     "Settings",
+    "Manage Users",
   ];
 
   const [sideBarItems, _] = useState([
@@ -40,10 +43,11 @@ function Sidebar() {
       path: "/app/notification",
     },
     {
-      title: "Users",
+      title: "Manage Users",
       icon: image7,
       path: "/app/users",
-      disable: false,
+      disable: !isAdmin,
+      hidden: !isAdmin,
     },
     {
       title: "Manage Account",
@@ -93,7 +97,7 @@ function Sidebar() {
               onClick={() => navigate(item.path)}
               className={`${
                 item.disable ? "cursor-not-allowed" : "cursor-pointer"
-              } group`}
+              } group ${item.hidden ? "hidden" : ""}`}
             >
               <img
                 src={item.icon}

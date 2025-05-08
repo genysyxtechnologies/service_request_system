@@ -18,6 +18,13 @@ interface ApiResponse {
 export const useRequesters = (token: string) => {
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<unknown>(null);
+  const [message, setMessage] = useState<{
+    isSuccess: boolean;
+    content: string;
+  }>({
+    isSuccess: false,
+    content: "",
+  });
 
   const fetchAllRequesters = async (url: string) => {
     const requestersRepository = new RequestersRepository(token);
@@ -36,9 +43,40 @@ export const useRequesters = (token: string) => {
     }
   };
 
+  // RESET REQUESTERS PASSWORD
+  const resetPassword = async (requesterId: number) => {
+    const requestersRepository = new RequestersRepository(token);
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await requestersRepository.updateRequesterPassword(
+        `${ENDPOINTS.RESET_REQUESTER_PASSWORD}/${requesterId}/reset-password`
+      );
+      if ((response as AxiosData).status === 200) {
+        setMessage({
+          isSuccess: true,
+          content: (response as any).data,
+        });
+        return (response as AxiosData).data;
+      }
+      setMessage({
+        isSuccess: false,
+        content: "Failed to reset password",
+      });
+      
+    } catch (err) {
+      setError(err);
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return {
     fetchAllRequesters,
+    resetPassword,
     loading,
+    message,
     error,
   };
 };

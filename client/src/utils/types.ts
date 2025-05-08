@@ -88,3 +88,9 @@ export interface ChangePasswordFormValues {
   newPassword: string;
   confirmPassword: string;
 }
+
+export interface UserUpdateValues {
+  username: string;
+  email: string;
+  id: number;
+}

@@ -22,8 +22,7 @@ const NotificationsPage: React.FC = () => {
 
   useEffect(() => {
     (async () => {
-      console.log(user);
-      const [notifications] = await Promise.all([fetchNotifications()]);
+      await Promise.all([fetchNotifications()]);
     })();
   }, []);
 

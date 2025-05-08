@@ -29,7 +29,6 @@ const useDepartment = (token: string) => {
         return (response as AxiosData).data as Department[];
       }
     } catch (error) {
-      console.log(error);
       setError(error);
     } finally {
       setLoading(false);

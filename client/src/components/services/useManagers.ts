@@ -1,7 +1,7 @@
 import { useState } from "react";
 import ManagersRepository from "../../repositories/managers.repository";
 import { ENDPOINTS } from "../../utils/endpoints";
-import { AxiosData } from "../../utils/types";
+import { AxiosData, UserUpdateValues } from "../../utils/types";
 
 export interface Manager {
   id: number;
@@ -46,10 +46,32 @@ export const useManagers = (token: string) => {
     }
   };
 
+  // update user
+  const updateUser = async (user: UserUpdateValues) => {
+    const manager = new ManagersRepository(token);
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await manager.updateManager(
+        `${ENDPOINTS.UPDATE_MANAGER}/${user.id}`,
+        user
+      );
+      if ((response as AxiosData).status === 200) {
+        return (response as AxiosData).data;
+      }
+    } catch (error) {
+      setError(error);
+      throw error;
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return {
     fetchManagers,
     loading,
     error,
+    updateUser,
   };
 };
 

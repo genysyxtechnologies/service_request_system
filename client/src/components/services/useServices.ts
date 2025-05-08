@@ -57,7 +57,6 @@ export const useServices = (token: string) => {
         }?departmentId=${departmentId}&page=${1}&size=${10}`
       );
       if (response as AxiosData) {
-        console.log("response", response);
         return response as AxiosData;
       }
       setLoading(false);
@@ -113,7 +112,6 @@ export const useServices = (token: string) => {
   const updateService = async (services: ServiceData, serviceId: number) => {
     setLoading(true);
     try {
-      console.log("services", services);
       const response = await service.updateService(
         ENDPOINTS.UPDATE_SERVICE,
         serviceId,

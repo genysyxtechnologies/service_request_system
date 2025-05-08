@@ -1,12 +1,12 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useSelector } from "react-redux";
-import { 
-  Table, 
-  Card, 
-  Typography, 
-  Space, 
-  Button, 
-  Input, 
+import {
+  Table,
+  Card,
+  Typography,
+  Space,
+  Button,
+  Input,
   Tag,
   Spin,
   Alert,
@@ -14,24 +14,25 @@ import {
   Empty,
   Dropdown,
   Menu,
-  Badge
+  Badge,
 } from "antd";
-import { 
-  SearchOutlined, 
-  ReloadOutlined, 
+import {
+  SearchOutlined,
+  ReloadOutlined,
   FilterOutlined,
   UserOutlined,
   MailOutlined,
   IdcardOutlined,
   MoreOutlined,
   DownloadOutlined,
-  EyeOutlined,
-  DeleteOutlined
+  DeleteOutlined,
+  LockOutlined,
 } from "@ant-design/icons";
 import { motion, AnimatePresence } from "framer-motion";
 import { useRequesters } from "../../../services/useRequesters";
 import { debounce } from "lodash";
 import { ENDPOINTS } from "../../../../utils/endpoints";
+import { toast } from "sonner";
 
 const { Title, Text } = Typography;
 
@@ -39,7 +40,7 @@ interface Requester {
   id: number;
   username: string;
   email: string;
-  status?: 'active' | 'inactive';
+  status?: "active" | "inactive";
 }
 
 interface ApiResponse {
@@ -55,14 +56,15 @@ interface ApiResponse {
 }
 
 const statusColors = {
-  active: 'green',
-  inactive: 'red'
+  active: "green",
+  inactive: "red",
 };
 
 const RequestersTable: React.FC = () => {
   const { token } = useSelector((state: any) => state.auth);
-  const { fetchAllRequesters, loading, error } = useRequesters(token);
-  
+  const { fetchAllRequesters, resetPassword, loading, message, error } =
+    useRequesters(token);
+
   const [data, setData] = useState<Requester[]>([]);
   const [filteredData, setFilteredData] = useState<Requester[]>([]);
   const [pagination, setPagination] = useState({
@@ -78,9 +80,11 @@ const RequestersTable: React.FC = () => {
     try {
       setRefreshing(true);
       const response: ApiResponse | any = await fetchAllRequesters(
-        `${ENDPOINTS.GET_REQUESTERS}?page=${page - 1}&size=${pageSize}&search=${search}`
+        `${ENDPOINTS.GET_REQUESTERS}?page=${
+          page - 1
+        }&size=${pageSize}&search=${search}`
       );
-      
+
       if (response?.content) {
         setData(response.content);
         setFilteredData(response.content);
@@ -127,14 +131,17 @@ const RequestersTable: React.FC = () => {
 
   const actionMenu = (record: Requester) => (
     <Menu>
-      <Menu.Item key="view" icon={<EyeOutlined />}>
-        View Details
-      </Menu.Item>
-      <Menu.Item key="edit" icon={<UserOutlined />}>
-        Edit Profile
-      </Menu.Item>
-      <Menu.Item key="delete" icon={<DeleteOutlined />} danger>
-        Delete
+      <Menu.Item
+        key="view"
+        icon={<LockOutlined />}
+        onClick={async () => {
+          await resetPassword(record.id);
+          message.isSuccess
+            ? toast.success(message.content)
+            : toast.error(message.content);
+        }}
+      >
+        Reset Password
       </Menu.Item>
     </Menu>
   );
@@ -166,9 +173,9 @@ const RequestersTable: React.FC = () => {
         <Space>
           <Text strong>{text}</Text>
           {record.status && (
-            <Badge 
-              color={statusColors[record.status]} 
-              text={record.status} 
+            <Badge
+              color={statusColors[record.status]}
+              text={record.status}
               className="capitalize"
             />
           )}
@@ -187,7 +194,10 @@ const RequestersTable: React.FC = () => {
       key: "email",
       render: (email: string) => (
         <Tooltip title="Click to email">
-          <a href={`mailto:${email}`} className="text-blue-500 hover:text-blue-700">
+          <a
+            href={`mailto:${email}`}
+            className="text-blue-500 hover:text-blue-700"
+          >
             {email}
           </a>
         </Tooltip>
@@ -197,9 +207,9 @@ const RequestersTable: React.FC = () => {
       title: "Actions",
       key: "actions",
       width: 120,
-      fixed: 'right' as const,
+      fixed: "right" as const,
       render: (_: any, record: Requester) => (
-        <Dropdown overlay={actionMenu(record)} trigger={['click']}>
+        <Dropdown overlay={actionMenu(record)} trigger={["click"]}>
           <Button type="text" icon={<MoreOutlined />} />
         </Dropdown>
       ),
@@ -253,38 +263,18 @@ const RequestersTable: React.FC = () => {
                     loading={refreshing}
                   />
                 </Tooltip>
-                <Button icon={<DownloadOutlined />}>Export</Button>
+                {/*       <Button icon={<DownloadOutlined />}>Export</Button> */}
                 <Button type="primary" icon={<FilterOutlined />}>
                   Filters
                 </Button>
               </Space>
             </motion.div>
           </div>
-
-          {/* <AnimatePresence>
-            {error && (
-              <motion.div
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: "auto" }}
-                exit={{ opacity: 0, height: 0 }}
-                className="mb-6"
-              >
-                <Alert
-                  message="Error loading data"
-                  description={error.toString()}
-                  type="error"
-                  showIcon
-                  closable
-                  onClose={() => setError(null)}
-                />
-              </motion.div>
-            )}
-          </AnimatePresence> */}
         </div>
 
-        <Spin 
-          spinning={loading} 
-          tip="Loading requesters..." 
+        <Spin
+          spinning={loading}
+          tip="Loading requesters..."
           indicator={<ReloadOutlined spin />}
           className="pt-6"
         >
@@ -311,8 +301,8 @@ const RequestersTable: React.FC = () => {
                     </Text>
                   ),
                   pageSizeOptions: ["10", "20", "50", "100"],
-                  position: ['bottomRight'],
-                  className: 'px-6 py-3'
+                  position: ["bottomRight"],
+                  className: "px-6 py-3",
                 }}
                 onChange={handleTableChange}
                 scroll={{ x: true }}
@@ -322,16 +312,18 @@ const RequestersTable: React.FC = () => {
                       image={Empty.PRESENTED_IMAGE_SIMPLE}
                       description={
                         <Text type="secondary">
-                          {searchText ? 'No matching requesters found' : 'No requesters available'}
+                          {searchText
+                            ? "No matching requesters found"
+                            : "No requesters available"}
                         </Text>
                       }
                     />
                   ),
                 }}
                 className="ant-table-striped"
-                rowClassName={(record, index) => 
+                rowClassName={(record, index) =>
                   `hover:bg-blue-50 transition-colors duration-200 ${
-                    index % 2 === 0 ? 'bg-gray-50' : ''
+                    index % 2 === 0 ? "bg-gray-50" : ""
                   }`
                 }
               />
