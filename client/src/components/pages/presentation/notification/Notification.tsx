@@ -200,14 +200,14 @@ const NotificationComponent: React.FC<NotificationProps> = ({
                   loading={loading}
                 />
               </div>
-              <Button
+              {/* <Button
                 type="primary"
                 onClick={markAllAsRead}
                 disabled={unreadCount === 0 || loading}
                 icon={<CheckOutlined />}
               >
                 Mark all as read
-              </Button>
+              </Button> */}
             </div>
           </div>
         }

@@ -89,8 +89,15 @@ export interface ChangePasswordFormValues {
   confirmPassword: string;
 }
 
-export interface UserUpdateValues {
+export interface ManagerValues {
   username: string;
   email: string;
   id: number;
+}
+
+export interface NewManager {
+  firstName?: string;
+  lastName?: string;
+  username: string;
+  email: string;
 }

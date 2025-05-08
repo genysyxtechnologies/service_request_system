@@ -1,7 +1,7 @@
 import { useState } from "react";
 import ManagersRepository from "../../repositories/managers.repository";
 import { ENDPOINTS } from "../../utils/endpoints";
-import { AxiosData, UserUpdateValues } from "../../utils/types";
+import { AxiosData, ManagerValues, NewManager } from "../../utils/types";
 
 export interface Manager {
   id: number;
@@ -27,6 +27,28 @@ export const useManagers = (token: string) => {
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<unknown>(null);
 
+  // create new manager
+  const createManager = async (user: NewManager) => {
+    const manager = new ManagersRepository(token);
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await manager.createManager(
+        `${ENDPOINTS.CREATE_MANAGER}`,
+        user
+      );
+      if ((response as AxiosData).status === 200) {
+        console.log("NEW MANAGER IS: ", response);
+        return { response: (response as AxiosData).data, created: true };
+      }
+    } catch (error) {
+      setError(error);
+      throw error;
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const fetchManagers = async (page = 0, size = 10, search = "") => {
     const manager = new ManagersRepository(token);
     setLoading(true);
@@ -47,7 +69,7 @@ export const useManagers = (token: string) => {
   };
 
   // update user
-  const updateUser = async (user: UserUpdateValues) => {
+  const updateUser = async (user: ManagerValues) => {
     const manager = new ManagersRepository(token);
     setLoading(true);
     setError(null);
@@ -72,6 +94,7 @@ export const useManagers = (token: string) => {
     loading,
     error,
     updateUser,
+    createManager,
   };
 };
 

@@ -21,18 +21,12 @@ import {
 import {
   SearchOutlined,
   ReloadOutlined,
-  FilterOutlined,
   UserOutlined,
   MailOutlined,
   IdcardOutlined,
   MoreOutlined,
-  DownloadOutlined,
-  EyeOutlined,
   EditOutlined,
-  DeleteOutlined,
   PlusOutlined,
-  CrownOutlined,
-  CheckCircleOutlined,
   LockOutlined,
 } from "@ant-design/icons";
 import { motion, AnimatePresence } from "framer-motion";
@@ -41,13 +35,10 @@ import useManagers, { Manager } from "../../../services/useManagers";
 import useRequesters from "../../../services/useRequesters";
 import UpdateUserForm from "./UpdateUser";
 import image1 from "../../../../assets/images/presentation/image3.png";
+import ManagerCreationForm from "./NewManager";
 
 const { Title, Text } = Typography;
 
-const statusColors = {
-  active: "green",
-  inactive: "red",
-};
 
 const roleColors = {
   admin: "purple",
@@ -72,7 +63,7 @@ const ManagersTable: React.FC = () => {
   const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
   const [isCreateModalVisible, setIsCreateModalVisible] = useState(false);
   const [isUpdateModalVisible, setIsUpdateModalVisible] = useState(false);
-  const [selectedManager, setSelectedManager] = useState<Manager | null>(null);
+  const [selectedManager, setSelectedManager] = useState<Manager & { firstName: string; lastName: string } | null>(null);
 
   const fetchData = async (page = 1, pageSize = 10, search = "") => {
     try {
@@ -142,7 +133,7 @@ const ManagersTable: React.FC = () => {
     onChange: (keys: React.Key[]) => setSelectedRowKeys(keys),
   };
 
-  const actionMenu = (record: Manager) => (
+  const actionMenu = (record: Manager & { firstName: string; lastName: string }) => (
     <Menu>
       <Menu.Item
         key="edit"
@@ -155,6 +146,7 @@ const ManagersTable: React.FC = () => {
         key="edit"
         icon={<EditOutlined />}
         onClick={async () => {
+          console.log(record);
           setSelectedManager(record);
           setIsUpdateModalVisible(true);
         }}
@@ -255,7 +247,7 @@ const ManagersTable: React.FC = () => {
       key: "actions",
       width: 80,
       fixed: "right" as const,
-      render: (_: any, record: Manager) => (
+      render: (_: any, record: Manager & { firstName: string; lastName: string }) => (
         <Dropdown overlay={actionMenu(record)} trigger={["click"]}>
           <Button type="text" icon={<MoreOutlined />} />
         </Dropdown>
@@ -312,7 +304,6 @@ const ManagersTable: React.FC = () => {
                 </Tooltip>
                 {/* <Button icon={<DownloadOutlined />}>Export</Button> */}
                 <Button
-                  disabled
                   type="primary"
                   icon={<PlusOutlined />}
                   onClick={showCreateModal}
@@ -406,39 +397,18 @@ const ManagersTable: React.FC = () => {
 
       {/* Create Manager Modal */}
       <Modal
-        title={
-          <Space>
-            <UserOutlined />
-            <span>Create New Manager</span>
-          </Space>
-        }
         open={isCreateModalVisible}
         onCancel={handleCreateCancel}
-        footer={[
-          <Button key="back" onClick={handleCreateCancel}>
-            Cancel
-          </Button>,
-          <Button
-            key="submit"
-            type="primary"
-            onClick={handleCreateSubmit}
-            icon={<CheckCircleOutlined />}
-          >
-            Create Manager
-          </Button>,
-        ]}
+        footer={null}
         width={700}
       >
-        <div className="p-4">{/*  create manager component */}</div>
+        <div className="p-4">
+          <ManagerCreationForm />
+        </div>
       </Modal>
       {/* Update Manager Modal */}
       <Modal
-        title={
-          <Space>
-            <UserOutlined />
-            <span>Update Manager</span>
-          </Space>
-        }
+        title={null}
         open={isUpdateModalVisible}
         onCancel={() => setIsUpdateModalVisible(false)}
         footer={null}
@@ -447,6 +417,8 @@ const ManagersTable: React.FC = () => {
         <UpdateUserForm
           username={selectedManager?.username || ""}
           email={selectedManager?.email || ""}
+          firstName={selectedManager?.firstName || ""}
+          lastName={selectedManager?.lastName || ""}
           avatar={image1}
         />
       </Modal>

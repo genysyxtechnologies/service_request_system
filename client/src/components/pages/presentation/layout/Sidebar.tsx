@@ -64,7 +64,7 @@ function Sidebar() {
 
   return (
     <div>
-      <div className="bg-white w-20 fixed top-6 bottom-6 left-6 rounded-xl flex py-4 transition-all duration-300 select-none shadow-md flex-col items-center gap-6">
+      <div className="bg-white w-20 h-auto overflow-y-auto fixed top-6 bottom-6 left-6 rounded-xl flex py-4 transition-all duration-300 select-none shadow-md flex-col items-center gap-6">
         <Tooltip
           title={tooltips[0]}
           placement="right"

@@ -203,11 +203,11 @@ const Department: React.FC<DepartmentProps> = ({ showButton = false }) => {
     filterIcon: (filtered: boolean) => (
       <Tooltip title="Filter">
         <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
-          <FilterOutlined 
-            style={{ 
+          <FilterOutlined
+            style={{
               color: filtered ? "#1890ff" : undefined,
-              fontSize: '16px'
-            }} 
+              fontSize: "16px",
+            }}
           />
         </motion.div>
       </Tooltip>
@@ -234,10 +234,10 @@ const Department: React.FC<DepartmentProps> = ({ showButton = false }) => {
 
   const handleSync = async () => {
     setIsSyncing(true);
-    message.loading({ 
-      content: "Synchronizing departments...", 
+    message.loading({
+      content: "Synchronizing departments...",
       key: "sync",
-      duration: 0 
+      duration: 0,
     });
     try {
       await syncDepartments();
@@ -273,9 +273,7 @@ const Department: React.FC<DepartmentProps> = ({ showButton = false }) => {
 
   const baseColumns = [
     {
-      title: (
-        <span className="text-gray-600 font-medium">Department Name</span>
-      ),
+      title: <span className="text-gray-600 font-medium">Department Name</span>,
       dataIndex: "name",
       key: "name",
       ...getColumnSearchProps("name"),
@@ -297,9 +295,7 @@ const Department: React.FC<DepartmentProps> = ({ showButton = false }) => {
       ),
     },
     {
-      title: (
-        <span className="text-gray-600 font-medium">Department Code</span>
-      ),
+      title: <span className="text-gray-600 font-medium">Department Code</span>,
       dataIndex: "code",
       key: "code",
       ...getColumnSearchProps("code"),
@@ -382,7 +378,7 @@ const Department: React.FC<DepartmentProps> = ({ showButton = false }) => {
                 Manage and filter department information
               </Text>
             </div>
-            
+
             <motion.div
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
@@ -428,7 +424,7 @@ const Department: React.FC<DepartmentProps> = ({ showButton = false }) => {
                       placeholder="Select departments"
                       value={selectedDepartments}
                       onChange={setSelectedDepartments}
-                      options={departments.map((dept) => ({
+                      options={departments?.map((dept) => ({
                         value: dept.name,
                         label: dept.name,
                       }))}
@@ -452,7 +448,7 @@ const Department: React.FC<DepartmentProps> = ({ showButton = false }) => {
                       }
                     />
                   </motion.div>
-                  
+
                   <AnimatePresence>
                     {selectedDepartments.length > 0 && (
                       <motion.div
@@ -528,7 +524,9 @@ const Department: React.FC<DepartmentProps> = ({ showButton = false }) => {
                     ),
                   },
                 }}
-                rowClassName={() => "hover:bg-gray-50 transition-colors duration-150"}
+                rowClassName={() =>
+                  "hover:bg-gray-50 transition-colors duration-150"
+                }
               />
             </motion.div>
           </Spin>

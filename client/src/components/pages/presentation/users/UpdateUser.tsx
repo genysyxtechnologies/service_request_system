@@ -9,13 +9,22 @@ import useManagers from "../../../services/useManagers";
 interface UserUpdateFormProps {
   username: string;
   email: string;
-  onUpdate?: (values: { username: string; email: string }) => Promise<void>;
+  firstName: string;
+  lastName: string;
+  onUpdate?: (values: {
+    username: string;
+    email: string;
+    firstName: string;
+    lastName: string;
+  }) => Promise<void>;
   avatar?: string;
 }
 
 const UpdateUserForm: React.FC<UserUpdateFormProps> = ({
   username: initialUsername,
   email: initialEmail,
+  firstName: initialFirstName,
+  lastName: initialLastName,
   onUpdate,
   avatar,
 }) => {
@@ -30,10 +39,17 @@ const UpdateUserForm: React.FC<UserUpdateFormProps> = ({
     form.setFieldsValue({
       username: initialUsername,
       email: initialEmail,
+      firstName: initialFirstName,
+      lastName: initialLastName,
     });
   }, [initialUsername, initialEmail, form]);
 
-  const handleSubmit = async (values: { username: string; email: string }) => {
+  const handleSubmit = async (values: {
+    username: string;
+    email: string;
+    firstName: string;
+    lastName: string;
+  }) => {
     setIsSubmitting(true);
     try {
       if (onUpdate) {
@@ -77,7 +93,7 @@ const UpdateUserForm: React.FC<UserUpdateFormProps> = ({
       initial="hidden"
       animate="visible"
       variants={containerVariants}
-      className="max-w-md mx-auto p-4"
+      className="w-full p-4"
     >
       <Card
         title={
@@ -104,6 +120,49 @@ const UpdateUserForm: React.FC<UserUpdateFormProps> = ({
           onFinish={handleSubmit}
           className="space-y-6"
         >
+          <motion.div
+            variants={itemVariants}
+            custom={0}
+            className="flex gap-4 items-center"
+          >
+            <Form.Item
+              className="flex-1"
+              name="firstName"
+              label="First Name"
+              rules={[
+                { required: true, message: "Please input your first name!" },
+                {
+                  min: 2,
+                  message: "First name must be at least 2 characters!",
+                },
+              ]}
+            >
+              <Input
+                prefix={<UserOutlined className="text-gray-400" />}
+                placeholder="First Name"
+                className="py-2 px-3 rounded-lg border-gray-300 hover:border-blue-400 focus:border-blue-500"
+              />
+            </Form.Item>
+            <Form.Item
+              className="flex-1"
+              name="lastName"
+              label="Last Name"
+              rules={[
+                { required: true, message: "Please input your last name!" },
+                {
+                  min: 2,
+                  message: "Last name must be at least 2 characters!",
+                },
+              ]}
+            >
+              <Input
+                prefix={<UserOutlined className="text-gray-400" />}
+                placeholder="First Name"
+                className="py-2 px-3 rounded-lg border-gray-300 hover:border-blue-400 focus:border-blue-500"
+              />
+            </Form.Item>
+          </motion.div>
+
           <motion.div variants={itemVariants} custom={1}>
             <Form.Item
               name="username"
