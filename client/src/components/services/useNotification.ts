@@ -86,7 +86,6 @@ const useNotification = (token: string, userId: number) => {
 
       if ((response as AxiosData).status === 200) {
         const data = (response as AxiosData).data;
-        console.log("NOTIFICATION DATA IS:", data);
         setNotifications(data.content);
         setPagination(data as PaginationData);
 
@@ -96,8 +95,8 @@ const useNotification = (token: string, userId: number) => {
         return data;
       }
     } catch (error) {
-      console.error("Failed to fetch notifications:", error);
       setError(error);
+      return error;
     } finally {
       setLoading(false);
     }
@@ -117,8 +116,8 @@ const useNotification = (token: string, userId: number) => {
         return data;
       }
     } catch (error) {
-      console.error("Failed to fetch unread notifications:", error);
       setError(error);
+      return error;
     } finally {
       setLoading(false);
     }
@@ -129,7 +128,6 @@ const useNotification = (token: string, userId: number) => {
       const response = await notificationRepository.updateNotification(
         `${ENDPOINTS.MARK_NOTIFICATION_READ}/${notificationId}/read`
       );
-      console.log(response);
       if ((response as AxiosData).status === 200) {
         setNotifications((prev) =>
           prev.map((n) => (n.id === notificationId ? { ...n, read: true } : n))
@@ -137,7 +135,8 @@ const useNotification = (token: string, userId: number) => {
         setUnreadCount((prev) => Math.max(0, prev - 1));
       }
     } catch (error) {
-      console.error("Failed to mark notification as read:", error);
+      setError(error);
+      return error;
     }
   };
 
@@ -148,11 +147,12 @@ const useNotification = (token: string, userId: number) => {
         userId,
         {}
       );
-      console.log("MARK ALL AS READ RESPONSE IS:", response);
       setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
       setUnreadCount(0);
+      return response;
     } catch (error) {
-      console.error("Failed to mark all notifications as read:", error);
+      setError(error);
+      return error;
     }
   };
 

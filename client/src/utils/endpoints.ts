@@ -22,6 +22,7 @@ export const ENDPOINTS = {
 
   // USERS
   GET_USERS: "/api/v1/users/requesters",
+  PASSWORD_UPDATE: "/api/auth/change-password",
 
   // DEPARTMENT
   SYNC_DEPARTMENTS: "/api/v1/departments/synchronize",
@@ -31,8 +32,10 @@ export const ENDPOINTS = {
   GET_NOTIFICATIONS: "/api/v1/notifications/user/me",
   MARK_NOTIFICATION_READ: "/api/v1/notifications",
   GET_UNREAD_NOTIFICATIONS: "/api/v1/notifications/user",
-  
 
   // REQUESTERS
   GET_REQUESTERS: "/api/v1/users/requesters",
+
+  // MANAGERS
+  GET_MANAGERS: "/api/v1/users/managers",
 };

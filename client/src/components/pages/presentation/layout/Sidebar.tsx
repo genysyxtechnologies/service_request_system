@@ -40,13 +40,13 @@ function Sidebar() {
       path: "/app/notification",
     },
     {
-      title: "Requesters",
+      title: "Users",
       icon: image7,
-      path: "/app/requesters",
+      path: "/app/users",
       disable: false,
     },
     {
-      title: "Profile",
+      title: "Manage Account",
       icon: image5,
       path: "/app/profile",
       disable: false,

@@ -13,6 +13,8 @@ import Requesters from "./components/pages/presentation/users/Requesters";
 import RequestContextProvider from "./context/request.context/RequestContextProvider";
 import NotificationsPage from "./components/pages/presentation/notification/NotificationPage";
 import Profile from "./components/pages/presentation/profile/Profile";
+import Managers from "./components/pages/presentation/users/Managers";
+import Users from "./components/pages/presentation/users/Users";
 
 function App() {
   return (
@@ -37,7 +39,9 @@ function App() {
           <Route path="category" element={<Category />} />
           <Route path="notification" element={<NotificationsPage />} />
           <Route path="dashboard" element={<Dashboard />} />
-          <Route path="requesters" element={<Requesters />} />
+         {/*  <Route path="requesters" element={<Requesters />} />
+          <Route path="managers" element={<Managers />} /> */}
+          <Route path="users" element={<Users />} />
           <Route path="profile" element={<Profile />} />
         </Route>
       </Routes>

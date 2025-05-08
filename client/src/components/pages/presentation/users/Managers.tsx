@@ -14,7 +14,9 @@ import {
   Empty,
   Dropdown,
   Menu,
-  Badge
+  Avatar,
+  Badge,
+  Modal
 } from "antd";
 import { 
   SearchOutlined, 
@@ -26,45 +28,35 @@ import {
   MoreOutlined,
   DownloadOutlined,
   EyeOutlined,
-  DeleteOutlined
+  EditOutlined,
+  DeleteOutlined,
+  PlusOutlined,
+  CrownOutlined,
+  CheckCircleOutlined
 } from "@ant-design/icons";
 import { motion, AnimatePresence } from "framer-motion";
-import { useRequesters } from "../../../services/useRequesters";
 import { debounce } from "lodash";
-import { ENDPOINTS } from "../../../../utils/endpoints";
+import useManagers, { Manager } from "../../../services/useManagers";
 
 const { Title, Text } = Typography;
-
-interface Requester {
-  id: number;
-  username: string;
-  email: string;
-  status?: 'active' | 'inactive';
-}
-
-interface ApiResponse {
-  content: Requester[];
-  pageable: {
-    pageNumber: number;
-    pageSize: number;
-  };
-  totalElements: number;
-  totalPages: number;
-  last: boolean;
-  first: boolean;
-}
 
 const statusColors = {
   active: 'green',
   inactive: 'red'
 };
 
-const RequestersTable: React.FC = () => {
+const roleColors = {
+  admin: 'purple',
+  manager: 'blue',
+  supervisor: 'cyan'
+};
+
+const ManagersTable: React.FC = () => {
   const { token } = useSelector((state: any) => state.auth);
-  const { fetchAllRequesters, loading, error } = useRequesters(token);
+  const { fetchManagers, loading, error } = useManagers(token);
   
-  const [data, setData] = useState<Requester[]>([]);
-  const [filteredData, setFilteredData] = useState<Requester[]>([]);
+  const [data, setData] = useState<Manager[]>([]);
+  const [filteredData, setFilteredData] = useState<Manager[]>([]);
   const [pagination, setPagination] = useState({
     current: 1,
     pageSize: 10,
@@ -73,17 +65,22 @@ const RequestersTable: React.FC = () => {
   const [searchText, setSearchText] = useState("");
   const [refreshing, setRefreshing] = useState(false);
   const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
+  const [isCreateModalVisible, setIsCreateModalVisible] = useState(false);
 
   const fetchData = async (page = 1, pageSize = 10, search = "") => {
     try {
       setRefreshing(true);
-      const response: ApiResponse | any = await fetchAllRequesters(
-        `${ENDPOINTS.GET_REQUESTERS}?page=${page - 1}&size=${pageSize}&search=${search}`
-      );
+      const response = await fetchManagers(page - 1, pageSize, search);
       
       if (response?.content) {
-        setData(response.content);
-        setFilteredData(response.content);
+        const managersWithStatus = response.content.map(manager => ({
+          ...manager,
+          status: manager.status || 'active',
+          role: manager.role || 'manager'
+        }));
+        
+        setData(managersWithStatus);
+        setFilteredData(managersWithStatus);
         setPagination({
           current: response.pageable.pageNumber + 1,
           pageSize: response.pageable.pageSize,
@@ -95,7 +92,6 @@ const RequestersTable: React.FC = () => {
     }
   };
 
-  // Debounced search
   const debouncedSearch = useCallback(
     debounce((searchValue: string) => {
       fetchData(1, pagination.pageSize, searchValue);
@@ -112,7 +108,7 @@ const RequestersTable: React.FC = () => {
     return () => debouncedSearch.cancel();
   }, [searchText, debouncedSearch]);
 
-  const handleTableChange = (pagination: any, filters: any, sorter: any) => {
+  const handleTableChange = (pagination: any) => {
     fetchData(pagination.current, pagination.pageSize, searchText);
   };
 
@@ -120,21 +116,35 @@ const RequestersTable: React.FC = () => {
     fetchData(pagination.current, pagination.pageSize, searchText);
   };
 
+  const showCreateModal = () => {
+    setIsCreateModalVisible(true);
+  };
+
+  const handleCreateCancel = () => {
+    setIsCreateModalVisible(false);
+  };
+
+  const handleCreateSubmit = () => {
+    // Add your create manager logic here
+    setIsCreateModalVisible(false);
+    fetchData(); // Refresh the table
+  };
+
   const rowSelection = {
     selectedRowKeys,
     onChange: (keys: React.Key[]) => setSelectedRowKeys(keys),
   };
 
-  const actionMenu = (record: Requester) => (
+  const actionMenu = (record: Manager) => (
     <Menu>
       <Menu.Item key="view" icon={<EyeOutlined />}>
         View Details
       </Menu.Item>
-      <Menu.Item key="edit" icon={<UserOutlined />}>
-        Edit Profile
+      <Menu.Item key="edit" icon={<EditOutlined />}>
+        Edit Manager
       </Menu.Item>
       <Menu.Item key="delete" icon={<DeleteOutlined />} danger>
-        Delete
+        Deactivate
       </Menu.Item>
     </Menu>
   );
@@ -157,21 +167,22 @@ const RequestersTable: React.FC = () => {
       title: (
         <Space>
           <UserOutlined />
-          <span>Username</span>
+          <span>Manager</span>
         </Space>
       ),
       dataIndex: "username",
       key: "username",
-      render: (text: string, record: Requester) => (
+      render: (text: string, record: Manager) => (
         <Space>
-          <Text strong>{text}</Text>
-          {record.status && (
-            <Badge 
-              color={statusColors[record.status]} 
-              text={record.status} 
-              className="capitalize"
-            />
-          )}
+          <Avatar size="small" icon={<UserOutlined />} />
+          <div>
+            <div className="font-medium">{text}</div>
+            {record.role && (
+              <Tag color={roleColors[record.role.toLowerCase()] || 'default'} className="text-xs">
+                {record.role}
+              </Tag>
+            )}
+          </div>
         </Space>
       ),
       sorter: true,
@@ -194,11 +205,36 @@ const RequestersTable: React.FC = () => {
       ),
     },
     {
+      title: "Status",
+      dataIndex: "status",
+      key: "status",
+      width: 120,
+      render: (status: string) => (
+        <Badge 
+          status={status === 'active' ? 'success' : 'error'} 
+          text={
+            <span className="capitalize">
+              {status === 'active' ? (
+                <span className="text-green-600">Active</span>
+              ) : (
+                <span className="text-red-600">Inactive</span>
+              )}
+            </span>
+          } 
+        />
+      ),
+      filters: [
+        { text: 'Active', value: 'active' },
+        { text: 'Inactive', value: 'inactive' },
+      ],
+      onFilter: (value: any, record: Manager) => record.status === value,
+    },
+    {
       title: "Actions",
       key: "actions",
-      width: 120,
+      width: 80,
       fixed: 'right' as const,
-      render: (_: any, record: Requester) => (
+      render: (_: any, record: Manager) => (
         <Dropdown overlay={actionMenu(record)} trigger={['click']}>
           <Button type="text" icon={<MoreOutlined />} />
         </Dropdown>
@@ -224,10 +260,10 @@ const RequestersTable: React.FC = () => {
               transition={{ delay: 0.1 }}
             >
               <Title level={3} className="mb-0">
-                Requesters Management
+                Managers Dashboard
               </Title>
               <Text type="secondary">
-                {pagination.total} requesters in system
+                {pagination.total} managers in system
               </Text>
             </motion.div>
 
@@ -238,7 +274,7 @@ const RequestersTable: React.FC = () => {
               className="flex flex-col sm:flex-row gap-3 w-full md:w-auto"
             >
               <Input
-                placeholder="Search requesters..."
+                placeholder="Search managers..."
                 prefix={<SearchOutlined />}
                 allowClear
                 value={searchText}
@@ -254,8 +290,12 @@ const RequestersTable: React.FC = () => {
                   />
                 </Tooltip>
                 <Button icon={<DownloadOutlined />}>Export</Button>
-                <Button type="primary" icon={<FilterOutlined />}>
-                  Filters
+                <Button 
+                  type="primary" 
+                  icon={<PlusOutlined />}
+                  onClick={showCreateModal}
+                >
+                  Create Manager
                 </Button>
               </Space>
             </motion.div>
@@ -284,7 +324,7 @@ const RequestersTable: React.FC = () => {
 
         <Spin 
           spinning={loading} 
-          tip="Loading requesters..." 
+          tip="Loading managers..." 
           indicator={<ReloadOutlined spin />}
           className="pt-6"
         >
@@ -307,7 +347,7 @@ const RequestersTable: React.FC = () => {
                   showQuickJumper: true,
                   showTotal: (total, range) => (
                     <Text type="secondary">
-                      Showing {range[0]}-{range[1]} of {total} requesters
+                      Showing {range[0]}-{range[1]} of {total} managers
                     </Text>
                   ),
                   pageSizeOptions: ["10", "20", "50", "100"],
@@ -322,7 +362,7 @@ const RequestersTable: React.FC = () => {
                       image={Empty.PRESENTED_IMAGE_SIMPLE}
                       description={
                         <Text type="secondary">
-                          {searchText ? 'No matching requesters found' : 'No requesters available'}
+                          {searchText ? 'No matching managers found' : 'No managers available'}
                         </Text>
                       }
                     />
@@ -339,8 +379,39 @@ const RequestersTable: React.FC = () => {
           </AnimatePresence>
         </Spin>
       </Card>
+
+      {/* Create Manager Modal */}
+      <Modal
+        title={
+          <Space>
+            <UserOutlined />
+            <span>Create New Manager</span>
+          </Space>
+        }
+        visible={isCreateModalVisible}
+        onCancel={handleCreateCancel}
+        footer={[
+          <Button key="back" onClick={handleCreateCancel}>
+            Cancel
+          </Button>,
+          <Button 
+            key="submit" 
+            type="primary" 
+            onClick={handleCreateSubmit}
+            icon={<CheckCircleOutlined />}
+          >
+            Create Manager
+          </Button>,
+        ]}
+        width={700}
+      >
+        <div className="p-4">
+          <p>Manager creation form would go here with all required fields.</p>
+          {/* Add your form components here */}
+        </div>
+      </Modal>
     </motion.div>
   );
 };
 
-export default RequestersTable;
+export default ManagersTable;

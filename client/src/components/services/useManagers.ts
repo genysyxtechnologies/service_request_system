@@ -1,10 +1,18 @@
 import { useState } from "react";
-import RequestersRepository from "../../repositories/requesters.repository";
+import ManagersRepository from "../../repositories/managers.repository";
 import { ENDPOINTS } from "../../utils/endpoints";
 import { AxiosData } from "../../utils/types";
 
+export interface Manager {
+  id: number;
+  username: string;
+  email: string;
+  role?: string;
+  status?: "active" | "inactive";
+}
+
 interface ApiResponse {
-  content: any[];
+  content: Manager[];
   pageable: {
     pageNumber: number;
     pageSize: number;
@@ -15,32 +23,34 @@ interface ApiResponse {
   first: boolean;
 }
 
-export const useRequesters = (token: string) => {
+export const useManagers = (token: string) => {
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<unknown>(null);
 
-  const fetchAllRequesters = async (url: string) => {
-    const requestersRepository = new RequestersRepository(token);
+  const fetchManagers = async (page = 0, size = 10, search = "") => {
+    const manager = new ManagersRepository(token);
     setLoading(true);
     setError(null);
     try {
-      const response = await requestersRepository.getAllRequests(url);
+      const response = await manager.getServices(
+        `${ENDPOINTS.GET_MANAGERS}?page=${page}&size=${size}&search=${search}`
+      );
       if ((response as AxiosData).status === 200) {
         return (response as AxiosData).data;
       }
-    } catch (err) {
-      setError(err);
-      throw err;
+    } catch (error) {
+      setError(error);
+      throw error;
     } finally {
       setLoading(false);
     }
   };
 
   return {
-    fetchAllRequesters,
+    fetchManagers,
     loading,
     error,
   };
 };
 
-export default useRequesters;
+export default useManagers;

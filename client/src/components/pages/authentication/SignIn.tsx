@@ -7,8 +7,10 @@ import image4 from "../../../assets/images/signin/image4.png";
 import "./signin.css";
 import { useAuth } from "../../services/useAuth";
 import AuthAnimation from "../../animations/AuthAnimation";
+import { reset } from "../../../utils/reset";
 
 function SignIn() {
+  reset();
   const {
     signup,
     user,
