@@ -160,7 +160,6 @@ export const useRequest = (token: string, isAdmin?: boolean) => {
         return true;
       }
     } catch (err) {
-      console.error("Error submitting request:", err);
       setError(
         (err as AxiosError).response?.data?.message ||
           "Failed to submit request. Please try again."

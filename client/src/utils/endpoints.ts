@@ -41,4 +41,5 @@ export const ENDPOINTS = {
   GET_MANAGERS: "/api/v1/users/managers",
   UPDATE_MANAGER: "/api/v1/users/managers",
   CREATE_MANAGER: "/api/v1/users/managers",
+  DELETE_MANAGER: "/api/v1/users/managers",
 };

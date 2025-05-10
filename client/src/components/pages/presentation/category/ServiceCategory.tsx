@@ -430,6 +430,9 @@ const ServicesCategory = () => {
       />
 
       <DeleteService
+        title="Delete Service"
+        content="Are you sure you want to delete this service? This action cannot be undone."
+        buttonTitle="Delete"
         visible={isDeleteModalVisible}
         onCancel={() => setDeleteModalVisible(false)}
         onDelete={async () => {

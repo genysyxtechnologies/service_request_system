@@ -38,7 +38,6 @@ export const useManagers = (token: string) => {
         user
       );
       if ((response as AxiosData).status === 200) {
-        console.log("NEW MANAGER IS: ", response);
         return { response: (response as AxiosData).data, created: true };
       }
     } catch (error) {
@@ -89,12 +88,34 @@ export const useManagers = (token: string) => {
     }
   };
 
+  // DELETE MANAGER
+  const deleteManager = async (id: number) => {
+    const manager = new ManagersRepository(token);
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await manager.deleteService(
+        ENDPOINTS.DELETE_MANAGER,
+        id
+      );
+      if ((response as AxiosData).status === 200) {
+        return (response as AxiosData).data;
+      }
+    } catch (error) {
+      setError(error);
+      return error;
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return {
     fetchManagers,
     loading,
     error,
     updateUser,
     createManager,
+    deleteManager,
   };
 };
 

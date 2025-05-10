@@ -6,12 +6,18 @@ interface DeleteServiceProps {
   visible: boolean;
   onCancel: () => void;
   onDelete: () => void;
+  content: string;
+  title: string;
+  buttonTitle: string;
 }
 
 const DeleteService: React.FC<DeleteServiceProps> = ({
   visible,
   onCancel,
   onDelete,
+  content,
+  title,
+  buttonTitle,
 }) => {
   return (
     <Modal
@@ -28,12 +34,11 @@ const DeleteService: React.FC<DeleteServiceProps> = ({
         </div>
 
         {/* Title */}
-        <h2 className="text-3xl font-bold text-[#FF8B8B]">Delete Service</h2>
+        <h2 className="text-3xl font-bold text-[#FF8B8B]">{title}</h2>
 
         {/* Description */}
         <p className="text-[#1E1E1E] mt-2 w-2/3 text-center mx-auto">
-          Are you sure you want to delete this service? This action cannot be
-          undone.
+          {content}
         </p>
 
         {/* Buttons */}
@@ -48,7 +53,7 @@ const DeleteService: React.FC<DeleteServiceProps> = ({
             className="bg-[#FF8B8B] text-white border-none hover:bg-[#FF8B8B]"
             onClick={onDelete}
           >
-            Delete
+            {buttonTitle}
           </Button>
         </div>
       </div>

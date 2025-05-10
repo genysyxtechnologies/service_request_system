@@ -30,7 +30,6 @@ const NewService: React.FC<NewServiceProps> = ({
         onClose();
       })
       .catch((errorInfo) => {
-        console.error("Validation Failed:", errorInfo);
         return errorInfo;
       });
   };

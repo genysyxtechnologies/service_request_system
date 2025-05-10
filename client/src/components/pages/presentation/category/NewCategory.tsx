@@ -72,7 +72,6 @@ const NewCategory: React.FC<CreateCategoryProps> = ({
       onSave();
       form.resetFields();
     } catch (errorInfo) {
-      console.error("Validation Failed:", errorInfo);
 
       //  error messages
       if (errorInfo.errorFields) {

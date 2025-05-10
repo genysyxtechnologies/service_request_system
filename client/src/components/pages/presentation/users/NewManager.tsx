@@ -35,7 +35,6 @@ const ManagerCreationForm: React.FC = () => {
   const { createManager, loading } = useManagers(token);
 
   const onFinish = async (values: ManagerValues) => {
-    console.log("THIS ARE THE VALUES FOR NOW: ", values);
     try {
       const response = await createManager(values);
       if (response?.created) {
@@ -44,7 +43,7 @@ const ManagerCreationForm: React.FC = () => {
         form.resetFields();
       }
     } catch (error) {
-      console.error("Error creating manager:", error);
+      return error;
     }
   };
 

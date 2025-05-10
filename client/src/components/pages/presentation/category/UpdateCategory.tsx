@@ -72,7 +72,7 @@ const UpdateCategory: React.FC<UpdateCategoryProps> = ({
 
       form.resetFields();
     } catch (errorInfo) {
-      console.error("Validation Failed:", errorInfo);
+
 
       if (errorInfo.errorFields) {
         errorInfo.errorFields.forEach((field) => {

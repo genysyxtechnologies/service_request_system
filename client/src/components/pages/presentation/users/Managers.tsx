@@ -28,6 +28,7 @@ import {
   EditOutlined,
   PlusOutlined,
   LockOutlined,
+  DeleteOutlined,
 } from "@ant-design/icons";
 import { motion, AnimatePresence } from "framer-motion";
 import { debounce } from "lodash";
@@ -36,9 +37,9 @@ import useRequesters from "../../../services/useRequesters";
 import UpdateUserForm from "./UpdateUser";
 import image1 from "../../../../assets/images/presentation/image3.png";
 import ManagerCreationForm from "./NewManager";
+import DeleteService from "../Services/DeleteService";
 
 const { Title, Text } = Typography;
-
 
 const roleColors = {
   admin: "purple",
@@ -48,7 +49,7 @@ const roleColors = {
 
 const ManagersTable: React.FC = () => {
   const { token } = useSelector((state: any) => state.auth);
-  const { fetchManagers, loading, error } = useManagers(token);
+  const { fetchManagers, deleteManager, loading, error } = useManagers(token);
   const { resetPassword } = useRequesters(token);
 
   const [data, setData] = useState<Manager[]>([]);
@@ -63,7 +64,11 @@ const ManagersTable: React.FC = () => {
   const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
   const [isCreateModalVisible, setIsCreateModalVisible] = useState(false);
   const [isUpdateModalVisible, setIsUpdateModalVisible] = useState(false);
-  const [selectedManager, setSelectedManager] = useState<Manager & { firstName: string; lastName: string } | null>(null);
+  const [selectedManager, setSelectedManager] = useState<
+    (Manager & { firstName: string; lastName: string }) | null
+  >(null);
+
+  const [isDeleteModalVisible, setDeleteModalVisible] = useState(false);
 
   const fetchData = async (page = 1, pageSize = 10, search = "") => {
     try {
@@ -133,7 +138,9 @@ const ManagersTable: React.FC = () => {
     onChange: (keys: React.Key[]) => setSelectedRowKeys(keys),
   };
 
-  const actionMenu = (record: Manager & { firstName: string; lastName: string }) => (
+  const actionMenu = (
+    record: Manager & { firstName: string; lastName: string }
+  ) => (
     <Menu>
       <Menu.Item
         key="edit"
@@ -146,12 +153,21 @@ const ManagersTable: React.FC = () => {
         key="edit"
         icon={<EditOutlined />}
         onClick={async () => {
-          console.log(record);
           setSelectedManager(record);
           setIsUpdateModalVisible(true);
         }}
       >
         Edit
+      </Menu.Item>
+      <Menu.Item
+        key="delete"
+        icon={<DeleteOutlined />}
+        onClick={async () => {
+          setSelectedManager(record);
+          setDeleteModalVisible(true);
+        }}
+      >
+        Delete
       </Menu.Item>
     </Menu>
   );
@@ -247,7 +263,10 @@ const ManagersTable: React.FC = () => {
       key: "actions",
       width: 80,
       fixed: "right" as const,
-      render: (_: any, record: Manager & { firstName: string; lastName: string }) => (
+      render: (
+        _: any,
+        record: Manager & { firstName: string; lastName: string }
+      ) => (
         <Dropdown overlay={actionMenu(record)} trigger={["click"]}>
           <Button type="text" icon={<MoreOutlined />} />
         </Dropdown>
@@ -422,6 +441,22 @@ const ManagersTable: React.FC = () => {
           avatar={image1}
         />
       </Modal>
+      {/* Delete Manager Modal */}
+      <DeleteService
+        title="Delete Manager"
+        content="Are you sure you want to delete this manager? This action cannot be undone."
+        buttonTitle="Delete"
+        visible={isDeleteModalVisible}
+        onCancel={() => setDeleteModalVisible(false)}
+        onDelete={async () => {
+          if (selectedManager) {
+            await deleteManager(selectedManager.id).then(() => {
+              setDeleteModalVisible(false);
+              fetchData();
+            });
+          }
+        }}
+      />
       {/*  */}
     </motion.div>
   );
