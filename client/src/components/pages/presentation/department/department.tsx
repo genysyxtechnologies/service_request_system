@@ -18,6 +18,9 @@ import {
   SearchOutlined,
   FilterOutlined,
   PlusOutlined,
+  BankOutlined,
+  AppstoreOutlined,
+  ClearOutlined,
 } from "@ant-design/icons";
 import type { ColumnType } from "antd/es/table";
 import type { FilterConfirmProps } from "antd/es/table/interface";
@@ -41,14 +44,18 @@ interface DepartmentProps {
 }
 
 const Department: React.FC<DepartmentProps> = ({ showButton = false }) => {
+  // These state variables are used by the column search functionality
+  // searchText is used in the filter functions
   const [searchText, setSearchText] = useState("");
   const [searchedColumn, setSearchedColumn] = useState("");
   const [filterMode, setFilterMode] = useState<"search" | "select">("search");
   const [selectedFilter, setSelectedFilter] = useState<string[]>([]);
   const [selectedDepartments, setSelectedDepartments] = useState<string[]>([]);
   const [isSyncing, setIsSyncing] = useState(false);
-  const searchInput = useRef<any>(null);
-  const { token } = useSelector((state: any) => state.auth);
+  const searchInput = useRef<Input | null>(null);
+  const { token } = useSelector(
+    (state: { auth: { token: string } }) => state.auth
+  );
   const { setDepartmentId } = useContext(RequestContext);
   const {
     syncDepartments,
@@ -58,12 +65,15 @@ const Department: React.FC<DepartmentProps> = ({ showButton = false }) => {
     setDepartments,
   } = useDepartment(token);
 
-  // fetch departments
+  // fetch departments only once when component mounts
   useEffect(() => {
     (async () => {
       const departments = await fetchDepartments();
-      setDepartments(departments!);
+      if (departments) {
+        setDepartments(departments);
+      }
     })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleSearch = (
@@ -98,7 +108,7 @@ const Department: React.FC<DepartmentProps> = ({ showButton = false }) => {
       <motion.div
         initial={{ opacity: 0, scale: 0.9 }}
         animate={{ opacity: 1, scale: 1 }}
-        className="p-4 bg-white rounded-xl shadow-lg border border-gray-100 w-full"
+        className="p-5 bg-white rounded-xl shadow-lg border border-gray-100 w-full backdrop-blur-sm bg-white/90"
       >
         {filterMode === "search" ? (
           <div className="flex flex-col space-y-3">
@@ -112,7 +122,7 @@ const Department: React.FC<DepartmentProps> = ({ showButton = false }) => {
               onPressEnter={() =>
                 handleSearch(selectedKeys as string[], confirm, dataIndex)
               }
-              className="w-full h-10 rounded-lg"
+              className="w-full h-10 rounded-lg transition-all duration-300 focus:border-indigo-500 focus:shadow-md"
             />
             <div className="flex justify-between gap-2">
               <Button
@@ -122,14 +132,14 @@ const Department: React.FC<DepartmentProps> = ({ showButton = false }) => {
                 }
                 icon={<SearchOutlined />}
                 size="middle"
-                className="flex-1 bg-blue-500 hover:bg-blue-600"
+                className="flex-1 bg-indigo-600 hover:bg-indigo-700 border-0 shadow-sm transition-all duration-300"
               >
                 Search
               </Button>
               <Button
                 onClick={() => clearFilters && handleReset(clearFilters)}
                 size="middle"
-                className="flex-1"
+                className="flex-1 hover:bg-gray-50 transition-all duration-300"
               >
                 Reset
               </Button>
@@ -140,7 +150,7 @@ const Department: React.FC<DepartmentProps> = ({ showButton = false }) => {
                   setFilterMode("select");
                   setSelectedFilter(selectedKeys as string[]);
                 }}
-                className="flex-1 text-blue-500"
+                className="flex-1 text-indigo-600 hover:text-indigo-800 transition-all duration-300"
               >
                 Switch to Select
               </Button>
@@ -153,9 +163,11 @@ const Department: React.FC<DepartmentProps> = ({ showButton = false }) => {
               placeholder={`Select ${dataIndex}`}
               value={selectedFilter}
               onChange={(value) => setSelectedFilter(value)}
-              options={Array.from(
-                new Set(departments.map((item) => item[dataIndex]))
-              ).map((value) => ({ value, label: value }))}
+              options={
+                Array.from(
+                  new Set(departments.map((item) => item[dataIndex]))
+                ).map((value) => ({ value, label: value })) || []
+              }
               style={{ width: "100%" }}
               showSearch
               filterOption={(input, option) =>
@@ -173,7 +185,7 @@ const Department: React.FC<DepartmentProps> = ({ showButton = false }) => {
                   handleSearch(selectedFilter, confirm, dataIndex);
                 }}
                 size="middle"
-                className="flex-1 bg-blue-500 hover:bg-blue-600"
+                className="flex-1 bg-indigo-600 hover:bg-indigo-700 border-0 shadow-sm transition-all duration-300"
               >
                 Apply
               </Button>
@@ -183,7 +195,7 @@ const Department: React.FC<DepartmentProps> = ({ showButton = false }) => {
                   clearFilters && handleReset(clearFilters);
                 }}
                 size="middle"
-                className="flex-1"
+                className="flex-1 hover:bg-gray-50 transition-all duration-300"
               >
                 Reset
               </Button>
@@ -191,7 +203,7 @@ const Department: React.FC<DepartmentProps> = ({ showButton = false }) => {
                 type="text"
                 size="middle"
                 onClick={() => setFilterMode("search")}
-                className="flex-1 text-blue-500"
+                className="flex-1 text-indigo-600 hover:text-indigo-800 transition-all duration-300"
               >
                 Switch to Search
               </Button>
@@ -224,9 +236,18 @@ const Department: React.FC<DepartmentProps> = ({ showButton = false }) => {
     },
     render: (text: string) =>
       searchedColumn === dataIndex ? (
-        <Tag color="blue" className="text-sm font-medium">
-          {text}
-        </Tag>
+        <motion.div
+          initial={{ scale: 0.9 }}
+          animate={{ scale: 1 }}
+          transition={{ type: "spring", stiffness: 500 }}
+        >
+          <Tag
+            color="blue"
+            className="text-sm font-medium px-3 py-1 rounded-full border-0 bg-indigo-100 text-indigo-800"
+          >
+            {text}
+          </Tag>
+        </motion.div>
       ) : (
         text
       ),
@@ -254,6 +275,7 @@ const Department: React.FC<DepartmentProps> = ({ showButton = false }) => {
         duration: 2,
       });
     } catch (error) {
+      // Error is logged by the message component
       message.error({
         content: (
           <motion.div
@@ -273,7 +295,11 @@ const Department: React.FC<DepartmentProps> = ({ showButton = false }) => {
 
   const baseColumns = [
     {
-      title: <span className="text-gray-600 font-medium">Department Name</span>,
+      title: (
+        <span className="text-gray-600 font-medium flex items-center">
+          <AppstoreOutlined className="mr-2 text-indigo-500" /> Department Name
+        </span>
+      ),
       dataIndex: "name",
       key: "name",
       ...getColumnSearchProps("name"),
@@ -287,7 +313,7 @@ const Department: React.FC<DepartmentProps> = ({ showButton = false }) => {
             type: "spring",
             stiffness: 100,
           }}
-          className="font-medium text-gray-800"
+          className="font-medium text-gray-800 flex items-center gap-2"
           whileHover={{ x: 5 }}
         >
           {text}
@@ -295,7 +321,11 @@ const Department: React.FC<DepartmentProps> = ({ showButton = false }) => {
       ),
     },
     {
-      title: <span className="text-gray-600 font-medium">Department Code</span>,
+      title: (
+        <span className="text-gray-600 font-medium flex items-center">
+          <AppstoreOutlined className="mr-2 text-indigo-500" /> Department Code
+        </span>
+      ),
       dataIndex: "code",
       key: "code",
       ...getColumnSearchProps("code"),
@@ -310,7 +340,7 @@ const Department: React.FC<DepartmentProps> = ({ showButton = false }) => {
             stiffness: 200,
           }}
           whileHover={{ scale: 1.05 }}
-          className="px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800"
+          className="px-3 py-1 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800 shadow-sm"
         >
           {text}
         </motion.span>
@@ -319,7 +349,11 @@ const Department: React.FC<DepartmentProps> = ({ showButton = false }) => {
   ];
 
   const actionColumn = {
-    title: <span className="text-gray-600 font-medium">Actions</span>,
+    title: (
+      <span className="text-gray-600 font-medium flex items-center">
+        <PlusOutlined className="mr-2 text-indigo-500" /> Actions
+      </span>
+    ),
     key: "actions",
     render: (text: string, record: DepartmentItem, index: number) => (
       <motion.div
@@ -337,7 +371,7 @@ const Department: React.FC<DepartmentProps> = ({ showButton = false }) => {
           type="primary"
           icon={<PlusOutlined />}
           onClick={() => handleCreateService(record)}
-          className="bg-blue-500 hover:bg-blue-600 border-blue-500 h-9"
+          className="bg-indigo-600 hover:bg-indigo-700 border-0 h-9 shadow-md transition-all duration-300 hover:shadow-lg"
         >
           Create Service
         </Button>
@@ -357,22 +391,22 @@ const Department: React.FC<DepartmentProps> = ({ showButton = false }) => {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5 }}
-      className="p-6 bg-gray-50 min-h-screen"
+      className="p-6 bg-gradient-to-br from-gray-50 to-gray-100 min-h-screen"
     >
       <Card
-        className="rounded-2xl shadow-sm border-0"
+        className="rounded-2xl shadow-md border-0 overflow-hidden backdrop-blur-sm bg-white/95"
         bodyStyle={{ padding: 0 }}
       >
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4 }}
-          className="p-6 border-b border-gray-100"
+          className="p-6 border-b border-gray-100 bg-gradient-to-r from-white to-gray-50"
         >
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div>
-              <Title level={3} className="m-0 text-gray-800">
-                Departments
+              <Title level={3} className="m-0 text-gray-800 flex items-center">
+                <BankOutlined className="mr-3 text-indigo-600" /> Departments
               </Title>
               <Text type="secondary" className="text-sm">
                 Manage and filter department information
@@ -389,7 +423,7 @@ const Department: React.FC<DepartmentProps> = ({ showButton = false }) => {
                 type="primary"
                 icon={<SyncOutlined spin={isSyncing} />}
                 loading={isSyncing}
-                className="bg-green-500 hover:bg-green-600 h-10 px-5 rounded-lg shadow-sm"
+                className="bg-green-500 hover:bg-green-600 h-10 px-5 rounded-lg shadow-sm transition-all duration-300 transform hover:translate-y-[-2px]"
               >
                 Synchronize All
               </Button>
@@ -401,7 +435,7 @@ const Department: React.FC<DepartmentProps> = ({ showButton = false }) => {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.2 }}
-          className="p-6"
+          className="p-6 bg-white"
         >
           <div className="mb-6">
             <motion.div
@@ -410,12 +444,16 @@ const Department: React.FC<DepartmentProps> = ({ showButton = false }) => {
               transition={{ delay: 0.3 }}
             >
               <Space className="w-full" direction="vertical">
-                <Text strong className="text-gray-600">
-                  Filter Departments
+                <Text
+                  strong
+                  className="text-gray-700 flex items-center text-base"
+                >
+                  <FilterOutlined className="mr-2 text-indigo-500" /> Filter
+                  Departments
                 </Text>
                 <div className="flex flex-col md:flex-row gap-4 w-full">
                   <motion.div
-                    className="flex-1"
+                    className="flex-1 hover:bg-gray-50 transition-all duration-300"
                     whileHover={{ scale: 1.005 }}
                     transition={{ duration: 0.2 }}
                   >
@@ -436,14 +474,15 @@ const Department: React.FC<DepartmentProps> = ({ showButton = false }) => {
                           .toLowerCase()
                           .includes(input.toLowerCase())
                       }
-                      className="h-10 [&_.ant-select-selector]:rounded-lg"
+                      className="h-10 [&_.ant-select-selector]:rounded-lg [&_.ant-select-selection-item]:bg-indigo-50 [&_.ant-select-selection-item]:border-indigo-100 transition-all duration-300"
                       dropdownStyle={{
                         borderRadius: "12px",
-                        boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)",
+                        boxShadow: "0 8px 24px rgba(0, 0, 0, 0.12)",
+                        border: "1px solid rgba(229, 231, 235, 0.5)",
                       }}
                       suffixIcon={
                         <motion.div whileHover={{ rotate: 15 }}>
-                          <SearchOutlined className="text-gray-400" />
+                          <SearchOutlined className="text-indigo-400" />
                         </motion.div>
                       }
                     />
@@ -459,7 +498,8 @@ const Department: React.FC<DepartmentProps> = ({ showButton = false }) => {
                       >
                         <Button
                           onClick={() => setSelectedDepartments([])}
-                          className="h-10 text-gray-500 hover:text-gray-700"
+                          icon={<ClearOutlined />}
+                          className="h-10 text-gray-500 hover:text-red-500 hover:border-red-200 transition-all duration-300"
                         >
                           Clear filters
                         </Button>
@@ -480,7 +520,10 @@ const Department: React.FC<DepartmentProps> = ({ showButton = false }) => {
                 animate={{ rotate: 360 }}
                 transition={{ repeat: Infinity, duration: 1, ease: "linear" }}
               >
-                <SyncOutlined style={{ fontSize: 24 }} />
+                <SyncOutlined
+                  style={{ fontSize: 28 }}
+                  className="text-indigo-600"
+                />
               </motion.div>
             }
           >
@@ -503,7 +546,7 @@ const Department: React.FC<DepartmentProps> = ({ showButton = false }) => {
                     </Text>
                   ),
                 }}
-                className="rounded-lg"
+                className="rounded-lg [&_th]:bg-gray-50 [&_th]:text-indigo-900 [&_th]:font-medium [&_th]:py-4 [&_td]:py-3"
                 loading={loading}
                 components={{
                   body: {
@@ -514,8 +557,9 @@ const Department: React.FC<DepartmentProps> = ({ showButton = false }) => {
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.3 }}
                         whileHover={{
-                          backgroundColor: "rgba(249, 250, 251, 0.8)",
-                          transition: { duration: 0.1 },
+                          backgroundColor: "rgba(238, 242, 255, 0.5)",
+                          scale: 1.005,
+                          transition: { duration: 0.2 },
                         }}
                         className="group"
                       >
@@ -525,7 +569,7 @@ const Department: React.FC<DepartmentProps> = ({ showButton = false }) => {
                   },
                 }}
                 rowClassName={() =>
-                  "hover:bg-gray-50 transition-colors duration-150"
+                  "hover:bg-indigo-50/30 transition-all duration-300 border-b border-gray-100"
                 }
               />
             </motion.div>

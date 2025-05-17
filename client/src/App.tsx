@@ -15,6 +15,7 @@ import NotificationsPage from "./components/pages/presentation/notification/Noti
 import Profile from "./components/pages/presentation/profile/Profile";
 import Managers from "./components/pages/presentation/users/Managers";
 import Users from "./components/pages/presentation/users/Users";
+import Supervisors from "./components/pages/presentation/supervisors/Supervisors";
 
 function App() {
   return (
@@ -43,6 +44,7 @@ function App() {
           <Route path="managers" element={<Managers />} /> */}
           <Route path="users" element={<Users />} />
           <Route path="profile" element={<Profile />} />
+          <Route path="supervisor" element={<Supervisors />} />
         </Route>
       </Routes>
     </div>

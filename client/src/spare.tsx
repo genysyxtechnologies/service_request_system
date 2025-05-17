@@ -1,52 +1,258 @@
-import React, { useState, useEffect } from 'react';
-import { Form, Input, Button, message, Card, Avatar, Space, Divider } from 'antd';
-import { UserOutlined, MailOutlined, EditOutlined, CheckOutlined } from '@ant-design/icons';
-import { motion, AnimatePresence } from 'framer-motion';
-import { useForm } from 'antd/es/form/Form';
+import {
+  Table,
+  Input,
+  Button,
+  Spin,
+  Tag,
+  Tooltip,
+  Select,
+  message,
+  Card,
+  Space,
+  Typography,
+} from "antd";
+import { motion, AnimatePresence } from "framer-motion";
+import { useEffect, useState, useRef, useContext } from "react";
+import {
+  SyncOutlined,
+  SearchOutlined,
+  FilterOutlined,
+  PlusOutlined,
+} from "@ant-design/icons";
+import type { ColumnType } from "antd/es/table";
+import type { FilterConfirmProps } from "antd/es/table/interface";
+import useDepartment from "../../../services/useDepartment";
+import { useSelector } from "react-redux";
+import RequestContext from "../../../../context/request.context/RequestContext";
 
-interface UserUpdateFormProps {
-  username: string;
-  email: string;
-  avatar?: string;
-  onUpdate?: (values: { username: string; email: string }) => Promise<void>;
+const { Title, Text } = Typography;
+
+interface DepartmentItem {
+  key: string;
+  name: string;
+  code: string;
+  id: number;
 }
 
-const UpdateUserForm: React.FC<UserUpdateFormProps> = ({ 
-  username: initialUsername, 
-  email: initialEmail,
-  avatar,
-  onUpdate
-}) => {
-  const [form] = useForm();
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isEditing, setIsEditing] = useState(false);
-  const [currentAvatar, setCurrentAvatar] = useState(avatar);
+type DataIndex = keyof DepartmentItem;
 
+interface DepartmentProps {
+  showButton?: boolean;
+}
+
+const Department: React.FC<DepartmentProps> = ({ showButton = false }) => {
+  const [searchText, setSearchText] = useState("");
+  const [searchedColumn, setSearchedColumn] = useState("");
+  const [filterMode, setFilterMode] = useState<"search" | "select">("search");
+  const [selectedFilter, setSelectedFilter] = useState<string[]>([]);
+  const [selectedDepartments, setSelectedDepartments] = useState<string[]>([]);
+  const [isSyncing, setIsSyncing] = useState(false);
+  const searchInput = useRef<any>(null);
+  const { token } = useSelector((state: any) => state.auth);
+  const { setDepartmentId } = useContext(RequestContext);
+  const {
+    syncDepartments,
+    loading,
+    fetchDepartments,
+    departments,
+    setDepartments,
+  } = useDepartment(token);
+
+  // fetch departments
   useEffect(() => {
-    form.setFieldsValue({
-      username: initialUsername,
-      email: initialEmail
-    });
-  }, [initialUsername, initialEmail, form]);
+    (async () => {
+      const departments = await fetchDepartments();
+      setDepartments(departments!);
+    })();
+  }, []);
 
-  const handleSubmit = async (values: { username: string; email: string }) => {
-    setIsSubmitting(true);
-    try {
-      if (onUpdate) {
-        await onUpdate(values);
+  const handleSearch = (
+    selectedKeys: string[],
+    confirm: (param?: FilterConfirmProps) => void,
+    dataIndex: DataIndex
+  ) => {
+    confirm();
+    setSearchText(selectedKeys[0]);
+    setSearchedColumn(dataIndex);
+  };
+
+  const handleReset = (clearFilters: () => void) => {
+    clearFilters();
+    setSearchText("");
+    setSelectedFilter([]);
+  };
+
+  const handleCreateService = (record: DepartmentItem) => {
+    setDepartmentId(record.id);
+  };
+
+  const getColumnSearchProps = (
+    dataIndex: DataIndex
+  ): ColumnType<DepartmentItem> => ({
+    filterDropdown: ({
+      setSelectedKeys,
+      selectedKeys,
+      confirm,
+      clearFilters,
+    }) => (
+      <motion.div
+        initial={{ opacity: 0, scale: 0.9 }}
+        animate={{ opacity: 1, scale: 1 }}
+        className="p-4 bg-white rounded-xl shadow-lg border border-gray-100 w-full"
+      >
+        {filterMode === "search" ? (
+          <div className="flex flex-col space-y-3">
+            <Input
+              ref={searchInput}
+              placeholder={`Search ${dataIndex}`}
+              value={selectedKeys[0]}
+              onChange={(e) =>
+                setSelectedKeys(e.target.value ? [e.target.value] : [])
+              }
+              onPressEnter={() =>
+                handleSearch(selectedKeys as string[], confirm, dataIndex)
+              }
+              className="w-full h-10 rounded-lg"
+            />
+            <div className="flex justify-between gap-2">
+              <Button
+                type="primary"
+                onClick={() =>
+                  handleSearch(selectedKeys as string[], confirm, dataIndex)
+                }
+                icon={<SearchOutlined />}
+                size="middle"
+                className="flex-1 bg-blue-500 hover:bg-blue-600"
+              >
+                Search
+              </Button>
+              <Button
+                onClick={() => clearFilters && handleReset(clearFilters)}
+                size="middle"
+                className="flex-1"
+              >
+                Reset
+              </Button>
+              <Button
+                type="text"
+                size="middle"
+                onClick={() => {
+                  setFilterMode("select");
+                  setSelectedFilter(selectedKeys as string[]);
+                }}
+                className="flex-1 text-blue-500"
+              >
+                Switch to Select
+              </Button>
+            </div>
+          </div>
+        ) : (
+          <div className="flex flex-col space-y-3">
+            <Select
+              mode="multiple"
+              placeholder={`Select ${dataIndex}`}
+              value={selectedFilter}
+              onChange={(value) => setSelectedFilter(value)}
+              options={Array.from(
+                new Set(departments.map((item) => item[dataIndex]))
+              ).map((value) => ({ value, label: value }))}
+              style={{ width: "100%" }}
+              showSearch
+              filterOption={(input, option) =>
+                (option?.label ?? "")
+                  .toLowerCase()
+                  .includes(input.toLowerCase())
+              }
+              className="h-10"
+            />
+            <div className="flex justify-between gap-2">
+              <Button
+                type="primary"
+                onClick={() => {
+                  setSelectedKeys(selectedFilter);
+                  handleSearch(selectedFilter, confirm, dataIndex);
+                }}
+                size="middle"
+                className="flex-1 bg-blue-500 hover:bg-blue-600"
+              >
+                Apply
+              </Button>
+              <Button
+                onClick={() => {
+                  setSelectedFilter([]);
+                  clearFilters && handleReset(clearFilters);
+                }}
+                size="middle"
+                className="flex-1"
+              >
+                Reset
+              </Button>
+              <Button
+                type="text"
+                size="middle"
+                onClick={() => setFilterMode("search")}
+                className="flex-1 text-blue-500"
+              >
+                Switch to Search
+              </Button>
+            </div>
+          </div>
+        )}
+      </motion.div>
+    ),
+    filterIcon: (filtered: boolean) => (
+      <Tooltip title="Filter">
+        <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
+          <FilterOutlined
+            style={{
+              color: filtered ? "#1890ff" : undefined,
+              fontSize: "16px",
+            }}
+          />
+        </motion.div>
+      </Tooltip>
+    ),
+    onFilter: (value, record) =>
+      record[dataIndex]
+        .toString()
+        .toLowerCase()
+        .includes((value as string).toLowerCase()),
+    onFilterDropdownOpenChange: (visible) => {
+      if (visible) {
+        setTimeout(() => searchInput.current?.select(), 100);
       }
+    },
+    render: (text: string) =>
+      searchedColumn === dataIndex ? (
+        <Tag color="blue" className="text-sm font-medium">
+          {text}
+        </Tag>
+      ) : (
+        text
+      ),
+  });
+
+  const handleSync = async () => {
+    setIsSyncing(true);
+    message.loading({
+      content: "Synchronizing departments...",
+      key: "sync",
+      duration: 0,
+    });
+    try {
+      await syncDepartments();
       message.success({
         content: (
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
           >
-            Profile updated successfully!
+            Departments synchronized successfully!
           </motion.div>
         ),
+        key: "sync",
         duration: 2,
       });
-      setIsEditing(false);
     } catch (error) {
       message.error({
         content: (
@@ -54,209 +260,281 @@ const UpdateUserForm: React.FC<UserUpdateFormProps> = ({
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
           >
-            Failed to update profile. Please try again.
+            Failed to synchronize departments
           </motion.div>
         ),
+        key: "sync",
         duration: 2,
       });
     } finally {
-      setIsSubmitting(false);
+      setIsSyncing(false);
     }
   };
 
-  const containerVariants = {
-    hidden: { opacity: 0, y: 20 },
-    visible: {
-      opacity: 1,
-      y: 0,
-      transition: {
-        duration: 0.5,
-        ease: "easeOut",
-        when: "beforeChildren",
-        staggerChildren: 0.1
-      }
-    }
+  const baseColumns = [
+    {
+      title: <span className="text-gray-600 font-medium">Department Name</span>,
+      dataIndex: "name",
+      key: "name",
+      ...getColumnSearchProps("name"),
+      render: (text: string, record: DepartmentItem, index: number) => (
+        <motion.div
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{
+            duration: 0.5,
+            delay: index * 0.05,
+            type: "spring",
+            stiffness: 100,
+          }}
+          className="font-medium text-gray-800"
+          whileHover={{ x: 5 }}
+        >
+          {text}
+        </motion.div>
+      ),
+    },
+    {
+      title: <span className="text-gray-600 font-medium">Department Code</span>,
+      dataIndex: "code",
+      key: "code",
+      ...getColumnSearchProps("code"),
+      render: (text: string, record: DepartmentItem, index: number) => (
+        <motion.span
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{
+            duration: 0.3,
+            delay: index * 0.15,
+            type: "spring",
+            stiffness: 200,
+          }}
+          whileHover={{ scale: 1.05 }}
+          className="px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800"
+        >
+          {text}
+        </motion.span>
+      ),
+    },
+  ];
+
+  const actionColumn = {
+    title: <span className="text-gray-600 font-medium">Actions</span>,
+    key: "actions",
+    render: (text: string, record: DepartmentItem, index: number) => (
+      <motion.div
+        initial={{ opacity: 0, scale: 0.8 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{
+          duration: 0.3,
+          delay: index * 0.25,
+          type: "spring",
+        }}
+        whileHover={{ scale: 1.05 }}
+        whileTap={{ scale: 0.95 }}
+      >
+        <Button
+          type="primary"
+          icon={<PlusOutlined />}
+          onClick={() => handleCreateService(record)}
+          className="bg-blue-500 hover:bg-blue-600 border-blue-500 h-9"
+        >
+          Create Service
+        </Button>
+      </motion.div>
+    ),
   };
 
-  const itemVariants = {
-    hidden: { opacity: 0, y: 10 },
-    visible: {
-      opacity: 1,
-      y: 0,
-      transition: {
-        duration: 0.5,
-        ease: "easeOut"
-      }
-    }
-  };
+  const columns = showButton ? [...baseColumns, actionColumn] : baseColumns;
 
-  const cardVariants = {
-    rest: { scale: 1 },
-    hover: { 
-      scale: 1.01,
-      boxShadow: "0px 10px 30px rgba(0, 0, 0, 0.1)"
-    }
-  };
+  const filteredData =
+    selectedDepartments.length > 0
+      ? departments.filter((dept) => selectedDepartments.includes(dept.name))
+      : departments;
 
   return (
     <motion.div
-      initial="hidden"
-      animate="visible"
-      variants={containerVariants}
-      className="flex justify-center items-center min-h-screen p-4 bg-gradient-to-br from-blue-50 to-gray-50"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.5 }}
+      className="p-6 bg-gray-50 min-h-screen"
     >
-      <motion.div
-        variants={cardVariants}
-        initial="rest"
-        whileHover="hover"
-        className="w-full max-w-md"
+      <Card
+        className="rounded-2xl shadow-sm border-0"
+        bodyStyle={{ padding: 0 }}
       >
-        <Card
-          title={
-            <motion.div 
-              variants={itemVariants}
-              className="flex items-center justify-between"
-            >
-              <div className="flex items-center gap-4">
-                <Avatar 
-                  size={64} 
-                  src={currentAvatar} 
-                  icon={<UserOutlined />} 
-                  className="bg-blue-100 text-blue-600 shadow-md"
-                />
-                <div>
-                  <h2 className="text-xl font-semibold text-gray-800">Profile Settings</h2>
-                  <p className="text-gray-500 text-sm">Update your account information</p>
-                </div>
-              </div>
-              {!isEditing && (
-                <Button
-                  type="text"
-                  icon={<EditOutlined />}
-                  onClick={() => setIsEditing(true)}
-                  className="text-blue-500 hover:text-blue-700"
-                >
-                  Edit
-                </Button>
-              )}
-            </motion.div>
-          }
-          bordered={false}
-          className="shadow-lg rounded-2xl overflow-hidden border border-gray-100 bg-white"
-          headStyle={{ borderBottom: 'none' }}
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4 }}
+          className="p-6 border-b border-gray-100"
         >
-          <Form
-            form={form}
-            layout="vertical"
-            onFinish={handleSubmit}
-            className="space-y-6"
-          >
-            <AnimatePresence mode="wait">
-              {isEditing ? (
-                <>
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div>
+              <Title level={3} className="m-0 text-gray-800">
+                Departments
+              </Title>
+              <Text type="secondary" className="text-sm">
+                Manage and filter department information
+              </Text>
+            </div>
+
+            <motion.div
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              transition={{ type: "spring", stiffness: 400 }}
+            >
+              <Button
+                onClick={handleSync}
+                type="primary"
+                icon={<SyncOutlined spin={isSyncing} />}
+                loading={isSyncing}
+                className="bg-green-500 hover:bg-green-600 h-10 px-5 rounded-lg shadow-sm"
+              >
+                Synchronize All
+              </Button>
+            </motion.div>
+          </div>
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.2 }}
+          className="p-6"
+        >
+          <div className="mb-6">
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 }}
+            >
+              <Space className="w-full" direction="vertical">
+                <Text strong className="text-gray-600">
+                  Filter Departments
+                </Text>
+                <div className="flex flex-col md:flex-row gap-4 w-full">
                   <motion.div
-                    key="editing-form"
-                    initial={{ opacity: 0, height: 0 }}
-                    animate={{ opacity: 1, height: 'auto' }}
-                    exit={{ opacity: 0, height: 0 }}
-                    transition={{ duration: 0.3 }}
+                    className="flex-1"
+                    whileHover={{ scale: 1.005 }}
+                    transition={{ duration: 0.2 }}
                   >
-                    <motion.div variants={itemVariants}>
-                      <Form.Item
-                        name="username"
-                        label={<span className="text-gray-600 font-medium">Username</span>}
-                        rules={[
-                          { required: true, message: 'Please input your username!' },
-                          { min: 3, message: 'Username must be at least 3 characters!' }
-                        ]}
-                      >
-                        <Input 
-                          prefix={<UserOutlined className="text-gray-400" />} 
-                          placeholder="Enter your username" 
-                          className="py-3 px-4 rounded-xl border-gray-300 hover:border-blue-400 focus:border-blue-500 focus:shadow-blue-100"
-                        />
-                      </Form.Item>
-                    </motion.div>
-
-                    <motion.div variants={itemVariants}>
-                      <Form.Item
-                        name="email"
-                        label={<span className="text-gray-600 font-medium">Email</span>}
-                        rules={[
-                          { required: true, message: 'Please input your email!' },
-                          { type: 'email', message: 'Please enter a valid email!' }
-                        ]}
-                      >
-                        <Input 
-                          prefix={<MailOutlined className="text-gray-400" />} 
-                          placeholder="Enter your email" 
-                          className="py-3 px-4 rounded-xl border-gray-300 hover:border-blue-400 focus:border-blue-500 focus:shadow-blue-100"
-                        />
-                      </Form.Item>
-                    </motion.div>
-
-                    <motion.div 
-                      variants={itemVariants}
-                      className="flex justify-end gap-3 pt-2"
-                    >
-                      <Button
-                        onClick={() => setIsEditing(false)}
-                        className="h-10 px-6 rounded-lg border border-gray-300 text-gray-600 hover:text-gray-800"
-                      >
-                        Cancel
-                      </Button>
-                      <Button
-                        type="primary"
-                        htmlType="submit"
-                        loading={isSubmitting}
-                        icon={<CheckOutlined />}
-                        className="h-10 px-6 rounded-lg bg-blue-600 hover:bg-blue-700 border-none font-medium shadow-md transition-all duration-300"
-                      >
-                        Save Changes
-                      </Button>
-                    </motion.div>
-                  </motion.div>
-                </>
-              ) : (
-                <motion.div
-                  key="view-mode"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  transition={{ duration: 0.3 }}
-                  className="space-y-6"
-                >
-                  <motion.div variants={itemVariants}>
-                    <div className="mb-1 text-sm text-gray-500 font-medium">Username</div>
-                    <div className="p-3 bg-gray-50 rounded-lg text-gray-800 font-medium">
-                      {initialUsername}
-                    </div>
+                    <Select
+                      mode="multiple"
+                      placeholder="Select departments"
+                      value={selectedDepartments}
+                      onChange={setSelectedDepartments}
+                      options={departments?.map((dept) => ({
+                        value: dept.name,
+                        label: dept.name,
+                      }))}
+                      style={{ width: "100%" }}
+                      allowClear
+                      showSearch
+                      filterOption={(input, option) =>
+                        (option?.label ?? "")
+                          .toLowerCase()
+                          .includes(input.toLowerCase())
+                      }
+                      className="h-10 [&_.ant-select-selector]:rounded-lg"
+                      dropdownStyle={{
+                        borderRadius: "12px",
+                        boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)",
+                      }}
+                      suffixIcon={
+                        <motion.div whileHover={{ rotate: 15 }}>
+                          <SearchOutlined className="text-gray-400" />
+                        </motion.div>
+                      }
+                    />
                   </motion.div>
 
-                  <motion.div variants={itemVariants}>
-                    <div className="mb-1 text-sm text-gray-500 font-medium">Email</div>
-                    <div className="p-3 bg-gray-50 rounded-lg text-gray-800 font-medium">
-                      {initialEmail}
-                    </div>
-                  </motion.div>
+                  <AnimatePresence>
+                    {selectedDepartments.length > 0 && (
+                      <motion.div
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.9 }}
+                        transition={{ type: "spring", stiffness: 500 }}
+                      >
+                        <Button
+                          onClick={() => setSelectedDepartments([])}
+                          className="h-10 text-gray-500 hover:text-gray-700"
+                        >
+                          Clear filters
+                        </Button>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+                
+              </Space>
+            </motion.div>
+          </div>
 
-                  <motion.div 
-                    variants={itemVariants}
-                    className="pt-4"
-                  >
-                    <Divider className="my-4" />
-                    <div className="text-xs text-gray-400 text-center">
-                      Last updated: {new Date().toLocaleDateString()}
-                    </div>
-                  </motion.div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </Form>
-        </Card>
-      </motion.div>
+          <Spin
+            spinning={loading}
+            tip="Loading departments..."
+            size="large"
+            indicator={
+              <motion.div
+                animate={{ rotate: 360 }}
+                transition={{ repeat: Infinity, duration: 1, ease: "linear" }}
+              >
+                <SyncOutlined style={{ fontSize: 24 }} />
+              </motion.div>
+            }
+          >
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.4 }}
+            >
+              <Table
+                columns={columns}
+                dataSource={filteredData}
+                pagination={{
+                  pageSize: 10,
+                  showSizeChanger: true,
+                  position: ["bottomRight"],
+                  className: "px-6 py-4",
+                  showTotal: (total) => (
+                    <Text className="text-gray-500">
+                      Showing {filteredData.length} of {total} departments
+                    </Text>
+                  ),
+                }}
+                className="rounded-lg"
+                loading={loading}
+                components={{
+                  body: {
+                    row: ({ children, ...props }) => (
+                      <motion.tr
+                        {...props}
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.3 }}
+                        whileHover={{
+                          backgroundColor: "rgba(249, 250, 251, 0.8)",
+                          transition: { duration: 0.1 },
+                        }}
+                        className="group"
+                      >
+                        {children}
+                      </motion.tr>
+                    ),
+                  },
+                }}
+                rowClassName={() =>
+                  "hover:bg-gray-50 transition-colors duration-150"
+                }
+              />
+            </motion.div>
+          </Spin>
+        </motion.div>
+      </Card>
     </motion.div>
   );
 };
 
-export default UpdateUserForm;
+export default Department;
