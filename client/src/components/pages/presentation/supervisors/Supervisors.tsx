@@ -79,30 +79,30 @@ interface RootState {
 }
 
 // Function to format the API response data to match our component needs
-const formatRequestData = (apiData: Array<Record<string, unknown>>): RequestData[] => {
-  return apiData.map(item => ({
+const formatRequestData = (
+  apiData: Array<Record<string, unknown>>
+): RequestData[] => {
+  return apiData.map((item) => ({
     id: item.id as number,
     status: item.status as string,
     targetDepartmentName: item.targetDepartmentName as string,
     userDepartmentName: item.userDepartmentName as string,
     createdAt: item.createdAt as number[],
     // Set default values for fields not in the API response
-    requestData: (item.requestData as string) || `Request #${item.id as number}`,
-    serviceName: (item.serviceName as string) || 'Service Request',
-    userName: (item.userName as string) || 'User',
-    priority: (item.priority as string) || 'Medium',
-    attachmentUrl: (item.attachmentUrl as string | null) || null
+    requestData:
+      (item.requestData as string) || `Request #${item.id as number}`,
+    serviceName: (item.serviceName as string) || "Service Request",
+    userName: (item.userName as string) || "User",
+    priority: (item.priority as string) || "Medium",
+    attachmentUrl: (item.attachmentUrl as string | null) || null,
   }));
 };
 
 const Supervisors: React.FC = () => {
   const { token } = useSelector((state: RootState) => state.auth);
   const { fetchRequestForSupervisors, loading } = useRequestSupervisors(token);
-  
-  // Debug loading state
-  useEffect(() => {
-    console.log('Loading state changed:', loading);
-  }, [loading]);
+
+
 
   // State variables
   const [requests, setRequests] = useState<RequestData[]>([]);
@@ -122,34 +122,36 @@ const Supervisors: React.FC = () => {
   const [pageSize, setPageSize] = useState<number>(10);
   const [availableStatuses, setAvailableStatuses] = useState<string[]>([]);
   const { RangePicker } = DatePicker;
-  
+
   // Fetch data from API
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetchRequestForSupervisors() as ApiResponse;
+        const response = (await fetchRequestForSupervisors()) as ApiResponse;
         if (response && response.content) {
           const formattedData = formatRequestData(response.content);
           setRequests(formattedData);
           setFilteredRequests(formattedData);
           setTotalItems(response.totalElements || formattedData.length);
-          
+
           // Extract unique departments and statuses from the data
           const uniqueDepts = new Set<string>();
           const uniqueStatuses = new Set<string>();
-          formattedData.forEach(item => {
-            if (item.userDepartmentName) uniqueDepts.add(item.userDepartmentName);
-            if (item.targetDepartmentName) uniqueDepts.add(item.targetDepartmentName);
+          formattedData.forEach((item) => {
+            if (item.userDepartmentName)
+              uniqueDepts.add(item.userDepartmentName);
+            if (item.targetDepartmentName)
+              uniqueDepts.add(item.targetDepartmentName);
             if (item.status) uniqueStatuses.add(item.status);
           });
           setDepartments(Array.from(uniqueDepts));
           setAvailableStatuses(Array.from(uniqueStatuses));
         }
       } catch (error) {
-        console.error('Error fetching data:', error);
+        console.error("Error fetching data:", error);
       }
     };
-    
+
     fetchData();
   }, [currentPage, pageSize]);
 
@@ -178,7 +180,9 @@ const Supervisors: React.FC = () => {
 
     // Apply user department filter
     if (userDeptFilter !== "ALL") {
-      result = result.filter((req) => req.userDepartmentName === userDeptFilter);
+      result = result.filter(
+        (req) => req.userDepartmentName === userDeptFilter
+      );
     }
 
     // Apply target department filter
@@ -193,12 +197,17 @@ const Supervisors: React.FC = () => {
       const lowerSearchText = searchText.toLowerCase();
       result = result.filter(
         (req) =>
-          (req.requestData?.toLowerCase().includes(lowerSearchText) || false) ||
-          (req.serviceName?.toLowerCase().includes(lowerSearchText) || false) ||
-          (req.userName?.toLowerCase().includes(lowerSearchText) || false) ||
-          (req.userDepartmentName?.toLowerCase().includes(lowerSearchText) || false) ||
-          (req.targetDepartmentName?.toLowerCase().includes(lowerSearchText) || false) ||
-          (req.id.toString().includes(lowerSearchText))
+          req.requestData?.toLowerCase().includes(lowerSearchText) ||
+          false ||
+          req.serviceName?.toLowerCase().includes(lowerSearchText) ||
+          false ||
+          req.userName?.toLowerCase().includes(lowerSearchText) ||
+          false ||
+          req.userDepartmentName?.toLowerCase().includes(lowerSearchText) ||
+          false ||
+          req.targetDepartmentName?.toLowerCase().includes(lowerSearchText) ||
+          false ||
+          req.id.toString().includes(lowerSearchText)
       );
     }
 
@@ -206,13 +215,20 @@ const Supervisors: React.FC = () => {
     if (dateRange && dateRange[0] && dateRange[1]) {
       result = result.filter((req) => {
         // Convert the createdAt array to a Date object
-        if (!req.createdAt || !Array.isArray(req.createdAt) || req.createdAt.length < 3) {
+        if (
+          !req.createdAt ||
+          !Array.isArray(req.createdAt) ||
+          req.createdAt.length < 3
+        ) {
           return false;
         }
-        
-        const [year, month, day, hour, minute, second] = req.createdAt;
-        const requestDate = dayjs(new Date(year, month - 1, day, hour || 0, minute || 0, second || 0));
-        
+
+        // Extract date components with proper defaults
+        const [year, month, day, hour = 0, minute = 0, second = 0] = req.createdAt;
+        const requestDate = dayjs(
+          new Date(year, month - 1, day, hour, minute, second)
+        );
+
         return (
           requestDate.isAfter(dateRange[0]) &&
           requestDate.isBefore(dateRange[1])
@@ -222,7 +238,14 @@ const Supervisors: React.FC = () => {
 
     // Update filtered requests
     setFilteredRequests(result);
-  }, [requests, statusFilter, userDeptFilter, targetDeptFilter, searchText, dateRange]);
+  }, [
+    requests,
+    statusFilter,
+    userDeptFilter,
+    targetDeptFilter,
+    searchText,
+    dateRange,
+  ]);
 
   // Reset all filters
   const resetFilters = () => {
@@ -232,7 +255,7 @@ const Supervisors: React.FC = () => {
     setSearchText("");
     setDateRange(null);
   };
-  
+
   // Handle pagination change
   const handlePageChange = (page: number, pageSize?: number) => {
     setCurrentPage(page);
@@ -263,7 +286,10 @@ const Supervisors: React.FC = () => {
       dataIndex: "requestData",
       key: "request",
       render: (text: string | undefined, record: RequestData) => {
-        const displayText = text && text.length > 50 ? `${text.substring(0, 50)}...` : text || `Request #${record.id}`;
+        const displayText =
+          text && text.length > 50
+            ? `${text.substring(0, 50)}...`
+            : text || `Request #${record.id}`;
         return (
           <motion.div
             initial={{ opacity: 0, x: -10 }}
@@ -274,17 +300,28 @@ const Supervisors: React.FC = () => {
             <p className="font-medium text-gray-800 hover:text-indigo-600 transition-colors cursor-pointer">
               {displayText}
             </p>
-          <div className="flex items-center mt-1">
-            <span className="text-xs text-gray-500 mr-2">
-              {record.serviceName || 'Service Request'}
-            </span>
-            <span className="text-xs text-gray-400">
-              {record.createdAt && Array.isArray(record.createdAt) && record.createdAt.length >= 3 ? 
-                dayjs(new Date(record.createdAt[0], record.createdAt[1] - 1, record.createdAt[2])).fromNow() : 
-                'Unknown date'}
-            </span>
-          </div>
-        </motion.div>
+            <div className="flex items-center mt-1">
+              <span className="text-xs text-gray-500 mr-2">
+                {record.serviceName || "Service Request"}
+              </span>
+              <span className="text-xs text-gray-400">
+                {record.createdAt &&
+                Array.isArray(record.createdAt) &&
+                record.createdAt.length >= 7
+                  ? dayjs(
+                      new Date(
+                        record.createdAt[0], // year
+                        record.createdAt[1] - 1, // month (0-indexed in JS Date)
+                        record.createdAt[2], // day
+                        record.createdAt[3] || 0, // hour
+                        record.createdAt[4] || 0, // minute
+                        record.createdAt[5] || 0  // second
+                      )
+                    ).fromNow()
+                  : "Unknown date"}
+              </span>
+            </div>
+          </motion.div>
         );
       },
     },
@@ -293,7 +330,7 @@ const Supervisors: React.FC = () => {
       dataIndex: "userDepartmentName",
       key: "userDepartmentName",
       render: (text: string | undefined) => {
-        const displayText = text || 'N/A';
+        const displayText = text || "N/A";
         return (
           <motion.div whileHover={{ scale: 1.02 }} className="flex flex-col">
             <span className="text-gray-700">{displayText}</span>
@@ -307,7 +344,7 @@ const Supervisors: React.FC = () => {
       key: "targetDepartmentName",
       render: (text: string | undefined) => (
         <motion.span whileHover={{ scale: 1.05 }} className="text-gray-600">
-          {text || 'N/A'}
+          {text || "N/A"}
         </motion.span>
       ),
     },
@@ -535,7 +572,11 @@ const Supervisors: React.FC = () => {
                       <Select.Option value="ALL">All Statuses</Select.Option>
                       {availableStatuses.map((status) => (
                         <Select.Option key={status} value={status}>
-                          {status.split("_").join(" ").toLowerCase().replace(/\b\w/g, (c) => c.toUpperCase())}
+                          {status
+                            .split("_")
+                            .join(" ")
+                            .toLowerCase()
+                            .replace(/\b\w/g, (c) => c.toUpperCase())}
                         </Select.Option>
                       ))}
                     </Select>
@@ -603,9 +644,8 @@ const Supervisors: React.FC = () => {
         transition={{ duration: 0.5, delay: 0.3 }}
         className="bg-white rounded-xl shadow-sm"
       >
-        
-         <Spin spinning={loading}>
-         <Table
+        <Spin spinning={loading}>
+          <Table
             columns={columns}
             dataSource={filteredRequests}
             rowKey="id"
@@ -681,19 +721,27 @@ const Supervisors: React.FC = () => {
                         </p>
                         <p className="text-gray-600">
                           <span className="font-medium">User Department:</span>{" "}
-                          {record.userDepartment}
+                          {record.userDepartmentName}
                         </p>
                         <p className="text-gray-600">
                           <span className="font-medium">
                             Target Department:
                           </span>{" "}
-                          {record.targetDepartment}
+                          {record.targetDepartmentName}
                         </p>
                         <p className="text-gray-600">
                           <span className="font-medium">Submitted:</span>{" "}
-                          {dayjs(record.submissionDate).format(
-                            "MMMM D, YYYY h:mm A"
-                          )}
+                          {Array.isArray(record.createdAt) && record.createdAt.length >= 7 ? 
+                            dayjs(new Date(
+                              record.createdAt[0], // year
+                              record.createdAt[1] - 1, // month (0-indexed in JS Date)
+                              record.createdAt[2], // day
+                              record.createdAt[3], // hour
+                              record.createdAt[4], // minute
+                              record.createdAt[5]  // second
+                            )).format("MMMM D, YYYY h:mm A") : 
+                            "Invalid date"
+                          }
                         </p>
                         {record.attachmentUrl && (
                           <p className="text-gray-600">
@@ -712,7 +760,7 @@ const Supervisors: React.FC = () => {
                     </div>
                   </div>
 
-                  <div className="mt-4 flex flex-wrap gap-3">
+                  {/*  <div className="mt-4 flex flex-wrap gap-3">
                     <motion.button
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.95 }}
@@ -734,7 +782,7 @@ const Supervisors: React.FC = () => {
                     >
                       Add Comment
                     </motion.button>
-                  </div>
+                  </div> */}
                 </motion.div>
               ),
               rowExpandable: (record) => record.id === selectedRow,
@@ -750,7 +798,7 @@ const Supervisors: React.FC = () => {
               ),
             }}
           />
-         </Spin>
+        </Spin>
       </motion.div>
     </motion.div>
   );

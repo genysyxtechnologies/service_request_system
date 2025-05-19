@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { use, useState } from "react";
 import ManagersRepository from "../../repositories/managers.repository";
 import { ENDPOINTS } from "../../utils/endpoints";
 import { AxiosData, ManagerValues, NewManager } from "../../utils/types";
@@ -9,18 +9,6 @@ export interface Manager {
   email: string;
   role?: string;
   status?: "active" | "inactive";
-}
-
-interface ApiResponse {
-  content: Manager[];
-  pageable: {
-    pageNumber: number;
-    pageSize: number;
-  };
-  totalElements: number;
-  totalPages: number;
-  last: boolean;
-  first: boolean;
 }
 
 export const useManagers = (token: string) => {

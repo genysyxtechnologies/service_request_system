@@ -129,29 +129,17 @@ export const useRequest = (token: string, isAdmin?: boolean) => {
     try {
       const formData = new FormData();
       formData.append("requestData", requestForm.requestData);
-      attachment.forEach((file) => formData.append("attachment", file));
 
       const response = await service.createRequest(
         ENDPOINTS.CREATE_REQUEST,
         serviceId,
         departmentId,
-        requestForm.requestData,
-        attachment,
-        {
-          onUploadProgress: (progressEvent) => {
-            if (progressEvent.total) {
-              const percentCompleted = Math.round(
-                (progressEvent.loaded * 100) / progressEvent.total
-              );
-              setUploadProgress(percentCompleted);
-            }
-          },
-        }
+        requestForm.requestData
       );
 
       setUploadProgress(100);
 
-      if (response.data) {
+      if ((response as AxiosData).status === 200) {
         message.success("Request submitted successfully!");
         setRequestForm({ requestData: "" });
         setAttachments([]);
@@ -173,12 +161,17 @@ export const useRequest = (token: string, isAdmin?: boolean) => {
   };
 
   // UPDATE status
-  const updateStatus = async (status: string, requestId: number) => {
+  const updateStatus = async (
+    status: string,
+    requestId: number,
+    rejectionReason?: string
+  ) => {
     try {
       await service
         .updateStatus(
           `${ENDPOINTS.UPDATE_REQUEST_STATUS}/${requestId}/status`,
-          status
+          status,
+          rejectionReason
         )
         .then(() => {
           setRefreshRequest((prev: boolean) => !prev);

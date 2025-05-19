@@ -1,4 +1,3 @@
-import axios, { AxiosRequestConfig } from "axios";
 import { Api } from "../utils/api";
 import { ServiceRepository } from "./service.repository";
 
@@ -12,31 +11,17 @@ export class RequestRepository extends ServiceRepository {
     endpoint: string,
     serviceId: number,
     departmentId: number,
-    requestData: string,
-    files: File[],
-    config?: AxiosRequestConfig
+    requestData: string
   ) {
     try {
-      const formData = new FormData();
-
-      // appending each file
-      files.forEach((file) => {
-        formData.append("attachment", file);
-      });
-
-      const response = await axios.post(
+      const response = await this.api.post(
         `${endpoint}/${serviceId}`,
         { requestData, userDepartmentId: departmentId },
-        {
-          headers: {
-            Authorization: `Bearer ${this.token}`,
-            contentType: "application/json",
-          },
-        }
+        this.token
       );
       return response;
     } catch (error) {
-      throw error;
+      return error;
     }
   }
 
@@ -51,9 +36,17 @@ export class RequestRepository extends ServiceRepository {
   }
 
   // update status
-  async updateStatus(endpoint: string, status: string) {
+  async updateStatus(
+    endpoint: string,
+    status: string,
+    rejectionReason?: string
+  ) {
     try {
-      const response = await this.api.put(endpoint, { status }, this.token);
+      const response = await this.api.put(
+        endpoint,
+        { status, rejectionReason },
+        this.token
+      );
       return response;
     } catch (error) {
       return error;

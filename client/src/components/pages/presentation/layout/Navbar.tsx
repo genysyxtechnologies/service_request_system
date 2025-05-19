@@ -22,6 +22,7 @@ function Navbar() {
               <CiSearch className="text-5xl text-[#9C9C9C] hover:text-[#7a7a7a] transition-colors duration-300" />
             </motion.div>
             <Input
+              readOnly
               placeholder="Search"
               variant="borderless"
               className="placeholder:text-[#9C9C9C] placeholder:text-xl focus:placeholder-opacity-0 transition-all duration-300"

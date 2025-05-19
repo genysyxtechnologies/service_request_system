@@ -1,540 +1,436 @@
+import React, { useState, useEffect } from "react";
 import {
-  Table,
+  Form,
   Input,
   Button,
-  Spin,
-  Tag,
-  Tooltip,
-  Select,
-  message,
   Card,
-  Space,
+  Alert,
   Typography,
+  Divider,
+  theme,
+  Space,
 } from "antd";
-import { motion, AnimatePresence } from "framer-motion";
-import { useEffect, useState, useRef, useContext } from "react";
 import {
-  SyncOutlined,
-  SearchOutlined,
-  FilterOutlined,
-  PlusOutlined,
+  LockOutlined,
+  EyeInvisibleOutlined,
+  EyeTwoTone,
+  CheckOutlined,
+  CloseOutlined,
+  SafetyOutlined,
 } from "@ant-design/icons";
-import type { ColumnType } from "antd/es/table";
-import type { FilterConfirmProps } from "antd/es/table/interface";
-import useDepartment from "../../../services/useDepartment";
+import { motion, AnimatePresence } from "framer-motion";
+import zxcvbn from "zxcvbn";
+import { ChangePasswordFormValues } from "../../../../utils/types";
+import { useAuth } from "../../../services/useAuth";
 import { useSelector } from "react-redux";
-import RequestContext from "../../../../context/request.context/RequestContext";
 
 const { Title, Text } = Typography;
+const { useToken } = theme;
 
-interface DepartmentItem {
-  key: string;
-  name: string;
-  code: string;
-  id: number;
+interface PasswordRequirementsProps {
+  password: string;
 }
 
-type DataIndex = keyof DepartmentItem;
+const PasswordStrengthMeter: React.FC<{ strength: number }> = ({
+  strength,
+}) => {
+  const { token } = useToken();
 
-interface DepartmentProps {
-  showButton?: boolean;
-}
+  const segments = [
+    { color: token.colorError, width: 25 },
+    { color: token.colorWarning, width: 50 },
+    { color: token.colorInfo, width: 75 },
+    { color: token.colorSuccess, width: 100 },
+  ];
 
-const Department: React.FC<DepartmentProps> = ({ showButton = false }) => {
-  const [searchText, setSearchText] = useState("");
-  const [searchedColumn, setSearchedColumn] = useState("");
-  const [filterMode, setFilterMode] = useState<"search" | "select">("search");
-  const [selectedFilter, setSelectedFilter] = useState<string[]>([]);
-  const [selectedDepartments, setSelectedDepartments] = useState<string[]>([]);
-  const [isSyncing, setIsSyncing] = useState(false);
-  const searchInput = useRef<any>(null);
-  const { token } = useSelector((state: any) => state.auth);
-  const { setDepartmentId } = useContext(RequestContext);
-  const {
-    syncDepartments,
-    loading,
-    fetchDepartments,
-    departments,
-    setDepartments,
-  } = useDepartment(token);
+  const activeSegment =
+    segments.find((seg) => strength <= seg.width) || segments[3];
 
-  // fetch departments
-  useEffect(() => {
-    (async () => {
-      const departments = await fetchDepartments();
-      setDepartments(departments!);
-    })();
-  }, []);
-
-  const handleSearch = (
-    selectedKeys: string[],
-    confirm: (param?: FilterConfirmProps) => void,
-    dataIndex: DataIndex
-  ) => {
-    confirm();
-    setSearchText(selectedKeys[0]);
-    setSearchedColumn(dataIndex);
-  };
-
-  const handleReset = (clearFilters: () => void) => {
-    clearFilters();
-    setSearchText("");
-    setSelectedFilter([]);
-  };
-
-  const handleCreateService = (record: DepartmentItem) => {
-    setDepartmentId(record.id);
-  };
-
-  const getColumnSearchProps = (
-    dataIndex: DataIndex
-  ): ColumnType<DepartmentItem> => ({
-    filterDropdown: ({
-      setSelectedKeys,
-      selectedKeys,
-      confirm,
-      clearFilters,
-    }) => (
+  return (
+    <div className="relative h-2 w-full bg-gray-100 rounded-full overflow-hidden">
       <motion.div
-        initial={{ opacity: 0, scale: 0.9 }}
-        animate={{ opacity: 1, scale: 1 }}
-        className="p-4 bg-white rounded-xl shadow-lg border border-gray-100 w-full"
-      >
-        {filterMode === "search" ? (
-          <div className="flex flex-col space-y-3">
-            <Input
-              ref={searchInput}
-              placeholder={`Search ${dataIndex}`}
-              value={selectedKeys[0]}
-              onChange={(e) =>
-                setSelectedKeys(e.target.value ? [e.target.value] : [])
-              }
-              onPressEnter={() =>
-                handleSearch(selectedKeys as string[], confirm, dataIndex)
-              }
-              className="w-full h-10 rounded-lg"
-            />
-            <div className="flex justify-between gap-2">
-              <Button
-                type="primary"
-                onClick={() =>
-                  handleSearch(selectedKeys as string[], confirm, dataIndex)
-                }
-                icon={<SearchOutlined />}
-                size="middle"
-                className="flex-1 bg-blue-500 hover:bg-blue-600"
-              >
-                Search
-              </Button>
-              <Button
-                onClick={() => clearFilters && handleReset(clearFilters)}
-                size="middle"
-                className="flex-1"
-              >
-                Reset
-              </Button>
-              <Button
-                type="text"
-                size="middle"
-                onClick={() => {
-                  setFilterMode("select");
-                  setSelectedFilter(selectedKeys as string[]);
-                }}
-                className="flex-1 text-blue-500"
-              >
-                Switch to Select
-              </Button>
-            </div>
-          </div>
-        ) : (
-          <div className="flex flex-col space-y-3">
-            <Select
-              mode="multiple"
-              placeholder={`Select ${dataIndex}`}
-              value={selectedFilter}
-              onChange={(value) => setSelectedFilter(value)}
-              options={Array.from(
-                new Set(departments.map((item) => item[dataIndex]))
-              ).map((value) => ({ value, label: value }))}
-              style={{ width: "100%" }}
-              showSearch
-              filterOption={(input, option) =>
-                (option?.label ?? "")
-                  .toLowerCase()
-                  .includes(input.toLowerCase())
-              }
-              className="h-10"
-            />
-            <div className="flex justify-between gap-2">
-              <Button
-                type="primary"
-                onClick={() => {
-                  setSelectedKeys(selectedFilter);
-                  handleSearch(selectedFilter, confirm, dataIndex);
-                }}
-                size="middle"
-                className="flex-1 bg-blue-500 hover:bg-blue-600"
-              >
-                Apply
-              </Button>
-              <Button
-                onClick={() => {
-                  setSelectedFilter([]);
-                  clearFilters && handleReset(clearFilters);
-                }}
-                size="middle"
-                className="flex-1"
-              >
-                Reset
-              </Button>
-              <Button
-                type="text"
-                size="middle"
-                onClick={() => setFilterMode("search")}
-                className="flex-1 text-blue-500"
-              >
-                Switch to Search
-              </Button>
-            </div>
-          </div>
-        )}
-      </motion.div>
-    ),
-    filterIcon: (filtered: boolean) => (
-      <Tooltip title="Filter">
-        <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
-          <FilterOutlined
-            style={{
-              color: filtered ? "#1890ff" : undefined,
-              fontSize: "16px",
-            }}
-          />
-        </motion.div>
-      </Tooltip>
-    ),
-    onFilter: (value, record) =>
-      record[dataIndex]
-        .toString()
-        .toLowerCase()
-        .includes((value as string).toLowerCase()),
-    onFilterDropdownOpenChange: (visible) => {
-      if (visible) {
-        setTimeout(() => searchInput.current?.select(), 100);
-      }
-    },
-    render: (text: string) =>
-      searchedColumn === dataIndex ? (
-        <Tag color="blue" className="text-sm font-medium">
-          {text}
-        </Tag>
-      ) : (
-        text
-      ),
-  });
+        className="h-full rounded-full"
+        initial={{ width: 0 }}
+        animate={{ width: `${strength}%` }}
+        transition={{ duration: 0.6, ease: "easeOut" }}
+        style={{ backgroundColor: activeSegment.color }}
+      />
+    </div>
+  );
+};
 
-  const handleSync = async () => {
-    setIsSyncing(true);
-    message.loading({
-      content: "Synchronizing departments...",
-      key: "sync",
-      duration: 0,
-    });
-    try {
-      await syncDepartments();
-      message.success({
-        content: (
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-          >
-            Departments synchronized successfully!
-          </motion.div>
-        ),
-        key: "sync",
-        duration: 2,
-      });
-    } catch (error) {
-      message.error({
-        content: (
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-          >
-            Failed to synchronize departments
-          </motion.div>
-        ),
-        key: "sync",
-        duration: 2,
-      });
-    } finally {
-      setIsSyncing(false);
-    }
+const PasswordRequirements: React.FC<PasswordRequirementsProps> = ({
+  password,
+}) => {
+  const getPasswordStrength = () => {
+    if (!password) return 0;
+    const result = zxcvbn(password);
+    return result.score * 25;
   };
 
-  const baseColumns = [
+  const strength = getPasswordStrength();
+
+  const requirements = [
+    { text: "Minimum 8 characters", validator: (p: string) => p.length >= 8 },
     {
-      title: <span className="text-gray-600 font-medium">Department Name</span>,
-      dataIndex: "name",
-      key: "name",
-      ...getColumnSearchProps("name"),
-      render: (text: string, record: DepartmentItem, index: number) => (
-        <motion.div
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{
-            duration: 0.5,
-            delay: index * 0.05,
-            type: "spring",
-            stiffness: 100,
-          }}
-          className="font-medium text-gray-800"
-          whileHover={{ x: 5 }}
-        >
-          {text}
-        </motion.div>
-      ),
+      text: "1 uppercase letter",
+      validator: (p: string) => /[A-Z]/.test(p),
     },
     {
-      title: <span className="text-gray-600 font-medium">Department Code</span>,
-      dataIndex: "code",
-      key: "code",
-      ...getColumnSearchProps("code"),
-      render: (text: string, record: DepartmentItem, index: number) => (
-        <motion.span
-          initial={{ opacity: 0, scale: 0.8 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{
-            duration: 0.3,
-            delay: index * 0.15,
-            type: "spring",
-            stiffness: 200,
-          }}
-          whileHover={{ scale: 1.05 }}
-          className="px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800"
-        >
-          {text}
-        </motion.span>
-      ),
+      text: "1 lowercase letter",
+      validator: (p: string) => /[a-z]/.test(p),
+    },
+    { text: "1 number", validator: (p: string) => /[0-9]/.test(p) },
+    {
+      text: "1 special character",
+      validator: (p: string) => /[^A-Za-z0-9]/.test(p),
     },
   ];
 
-  const actionColumn = {
-    title: <span className="text-gray-600 font-medium">Actions</span>,
-    key: "actions",
-    render: (text: string, record: DepartmentItem, index: number) => (
-      <motion.div
-        initial={{ opacity: 0, scale: 0.8 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{
-          duration: 0.3,
-          delay: index * 0.25,
-          type: "spring",
-        }}
-        whileHover={{ scale: 1.05 }}
-        whileTap={{ scale: 0.95 }}
-      >
-        <Button
-          type="primary"
-          icon={<PlusOutlined />}
-          onClick={() => handleCreateService(record)}
-          className="bg-blue-500 hover:bg-blue-600 border-blue-500 h-9"
-        >
-          Create Service
-        </Button>
-      </motion.div>
-    ),
+  return (
+    <motion.div
+      initial={{ opacity: 0, height: 0 }}
+      animate={{ opacity: 1, height: "auto" }}
+      transition={{ duration: 0.3 }}
+      className="mt-4"
+    >
+      <div className="mb-4">
+        <Space className="mb-1">
+          <SafetyOutlined />
+          <Text strong>Password Strength</Text>
+          <Text type="secondary" className="text-xs">
+            {strength >= 75 ? "Strong" : strength >= 50 ? "Moderate" : "Weak"}
+          </Text>
+        </Space>
+        <PasswordStrengthMeter strength={strength} />
+      </div>
+
+      <Divider orientation="left" plain className="text-xs">
+        Password Requirements
+      </Divider>
+
+      <motion.ul className="list-none pl-0 space-y-2">
+        {requirements.map((req, i) => {
+          const isValid = password ? req.validator(password) : false;
+          return (
+            <motion.li
+              key={i}
+              className="flex items-center"
+              initial={{ opacity: 0, x: -10 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: i * 0.05 }}
+            >
+              <motion.span
+                animate={{
+                  scale: isValid ? [1, 1.2, 1] : 1,
+                }}
+                transition={{ duration: 0.3 }}
+              >
+                {isValid ? (
+                  <CheckOutlined className="text-green-500 mr-2" />
+                ) : (
+                  <CloseOutlined className="text-red-500 mr-2" />
+                )}
+              </motion.span>
+              <Text type={isValid ? "success" : "secondary"}>{req.text}</Text>
+            </motion.li>
+          );
+        })}
+      </motion.ul>
+    </motion.div>
+  );
+};
+
+const ChangePasswordForm: React.FC = () => {
+  const [form] = Form.useForm();
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState(false);
+  const [password, setPassword] = useState("");
+  const [showRequirements, setShowRequirements] = useState(false);
+  const { token } = useToken();
+
+  const { updatePassword, message } = useAuth();
+  const { token: authToken } = useSelector((state: any) => state.auth);
+
+  useEffect(() => {
+    if (password.length > 0) {
+      setShowRequirements(true);
+    } else {
+      setShowRequirements(false);
+    }
+  }, [password]);
+
+  const onFinish = async (values: ChangePasswordFormValues) => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      await updatePassword(values, authToken);
+      setSuccess(true);
+      form.resetFields();
+      setPassword("");
+      setTimeout(() => setSuccess(false), 5000);
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : "Failed to update password"
+      );
+    } finally {
+      setLoading(false);
+    }
   };
-
-  const columns = showButton ? [...baseColumns, actionColumn] : baseColumns;
-
-  const filteredData =
-    selectedDepartments.length > 0
-      ? departments.filter((dept) => selectedDepartments.includes(dept.name))
-      : departments;
 
   return (
     <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ duration: 0.5 }}
-      className="p-6 bg-gray-50 min-h-screen"
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5, ease: "easeOut" }}
+      className="max-w-md mx-auto"
     >
       <Card
-        className="rounded-2xl shadow-sm border-0"
-        bodyStyle={{ padding: 0 }}
-      >
-        <motion.div
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4 }}
-          className="p-6 border-b border-gray-100"
-        >
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-            <div>
-              <Title level={3} className="m-0 text-gray-800">
-                Departments
+        title={
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.2 }}
+            className="text-center"
+          >
+            <Space direction="vertical" size={0}>
+              <Title level={3} className="m-0">
+                Update Your Password
               </Title>
               <Text type="secondary" className="text-sm">
-                Manage and filter department information
+                Secure your account with a new password
               </Text>
-            </div>
-
+            </Space>
+          </motion.div>
+        }
+        bordered={false}
+        className="shadow-xl rounded-2xl overflow-hidden border-0"
+        headStyle={{
+          background: `linear-gradient(135deg, ${token.colorPrimary} 0%, ${token.colorPrimaryActive} 100%)`,
+          color: token.colorTextLightSolid,
+          border: "none",
+          padding: "24px",
+        }}
+        bodyStyle={{ padding: "24px" }}
+      >
+        <AnimatePresence>
+          {error && (
             <motion.div
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              transition={{ type: "spring", stiffness: 400 }}
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+              transition={{ duration: 0.3 }}
             >
-              <Button
-                onClick={handleSync}
-                type="primary"
-                icon={<SyncOutlined spin={isSyncing} />}
-                loading={isSyncing}
-                className="bg-green-500 hover:bg-green-600 h-10 px-5 rounded-lg shadow-sm"
-              >
-                Synchronize All
-              </Button>
-            </motion.div>
-          </div>
-        </motion.div>
-
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.2 }}
-          className="p-6"
-        >
-          <div className="mb-6">
-            <motion.div
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3 }}
-            >
-              <Space className="w-full" direction="vertical">
-                <Text strong className="text-gray-600">
-                  Filter Departments
-                </Text>
-                <div className="flex flex-col md:flex-row gap-4 w-full">
-                  <motion.div
-                    className="flex-1"
-                    whileHover={{ scale: 1.005 }}
-                    transition={{ duration: 0.2 }}
-                  >
-                    <Select
-                      mode="multiple"
-                      placeholder="Select departments"
-                      value={selectedDepartments}
-                      onChange={setSelectedDepartments}
-                      options={departments?.map((dept) => ({
-                        value: dept.name,
-                        label: dept.name,
-                      }))}
-                      style={{ width: "100%" }}
-                      allowClear
-                      showSearch
-                      filterOption={(input, option) =>
-                        (option?.label ?? "")
-                          .toLowerCase()
-                          .includes(input.toLowerCase())
-                      }
-                      className="h-10 [&_.ant-select-selector]:rounded-lg"
-                      dropdownStyle={{
-                        borderRadius: "12px",
-                        boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)",
-                      }}
-                      suffixIcon={
-                        <motion.div whileHover={{ rotate: 15 }}>
-                          <SearchOutlined className="text-gray-400" />
-                        </motion.div>
-                      }
-                    />
-                  </motion.div>
-
-                  <AnimatePresence>
-                    {selectedDepartments.length > 0 && (
-                      <motion.div
-                        initial={{ opacity: 0, scale: 0.9 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        exit={{ opacity: 0, scale: 0.9 }}
-                        transition={{ type: "spring", stiffness: 500 }}
-                      >
-                        <Button
-                          onClick={() => setSelectedDepartments([])}
-                          className="h-10 text-gray-500 hover:text-gray-700"
-                        >
-                          Clear filters
-                        </Button>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                </div>
-                
-              </Space>
-            </motion.div>
-          </div>
-
-          <Spin
-            spinning={loading}
-            tip="Loading departments..."
-            size="large"
-            indicator={
-              <motion.div
-                animate={{ rotate: 360 }}
-                transition={{ repeat: Infinity, duration: 1, ease: "linear" }}
-              >
-                <SyncOutlined style={{ fontSize: 24 }} />
-              </motion.div>
-            }
-          >
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.4 }}
-            >
-              <Table
-                columns={columns}
-                dataSource={filteredData}
-                pagination={{
-                  pageSize: 10,
-                  showSizeChanger: true,
-                  position: ["bottomRight"],
-                  className: "px-6 py-4",
-                  showTotal: (total) => (
-                    <Text className="text-gray-500">
-                      Showing {filteredData.length} of {total} departments
-                    </Text>
-                  ),
-                }}
-                className="rounded-lg"
-                loading={loading}
-                components={{
-                  body: {
-                    row: ({ children, ...props }) => (
-                      <motion.tr
-                        {...props}
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.3 }}
-                        whileHover={{
-                          backgroundColor: "rgba(249, 250, 251, 0.8)",
-                          transition: { duration: 0.1 },
-                        }}
-                        className="group"
-                      >
-                        {children}
-                      </motion.tr>
-                    ),
-                  },
-                }}
-                rowClassName={() =>
-                  "hover:bg-gray-50 transition-colors duration-150"
-                }
+              <Alert
+                message={error}
+                type="error"
+                showIcon
+                closable
+                onClose={() => setError(null)}
+                className="mb-6"
+                banner
               />
             </motion.div>
-          </Spin>
-        </motion.div>
+          )}
+        </AnimatePresence>
+
+        <AnimatePresence>
+          {success && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+              transition={{ duration: 0.3 }}
+            >
+              <Alert
+                message={
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: 0.3 }}
+                  >
+                    {message.text}
+                  </motion.div>
+                }
+                type={message.updated ? "success" : "error"}
+                showIcon
+                className="mb-6"
+                banner
+              />
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        <Form
+          form={form}
+          layout="vertical"
+          onFinish={onFinish}
+          className="w-full"
+        >
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+          >
+            <Form.Item
+              name="oldPassword"
+              label={
+                <Text strong className="text-gray-700">
+                  Current Password
+                </Text>
+              }
+              rules={[
+                {
+                  required: true,
+                  message: "Please input your current password!",
+                },
+                { min: 8, message: "Password must be at least 8 characters!" },
+              ]}
+            >
+              <Input.Password
+                prefix={
+                  <LockOutlined style={{ color: token.colorTextSecondary }} />
+                }
+                placeholder="Enter current password"
+                iconRender={(visible) =>
+                  visible ? <EyeTwoTone /> : <EyeInvisibleOutlined />
+                }
+                size="large"
+                className="rounded-lg hover:border-blue-400 focus:border-blue-500"
+              />
+            </Form.Item>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4 }}
+          >
+            <Form.Item
+              name="newPassword"
+              label={
+                <Text strong className="text-gray-700">
+                  New Password
+                </Text>
+              }
+              rules={[
+                { required: true, message: "Please input your new password!" },
+                { min: 8, message: "Password must be at least 8 characters!" },
+                ({ getFieldValue }) => ({
+                  validator(_, value) {
+                    if (!value || getFieldValue("oldPassword") !== value) {
+                      return Promise.resolve();
+                    }
+                    return Promise.reject(
+                      new Error(
+                        "New password must be different from current password!"
+                      )
+                    );
+                  },
+                }),
+              ]}
+            >
+              <Input.Password
+                prefix={
+                  <LockOutlined style={{ color: token.colorTextSecondary }} />
+                }
+                placeholder="Create new password"
+                iconRender={(visible) =>
+                  visible ? <EyeTwoTone /> : <EyeInvisibleOutlined />
+                }
+                size="large"
+                className="rounded-lg hover:border-blue-400 focus:border-blue-500"
+                onChange={(e) => setPassword(e.target.value)}
+                onFocus={() => password.length > 0 && setShowRequirements(true)}
+              />
+            </Form.Item>
+          </motion.div>
+
+          <AnimatePresence>
+            {showRequirements && <PasswordRequirements password={password} />}
+          </AnimatePresence>
+
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.5 }}
+          >
+            <Form.Item
+              name="confirmPassword"
+              label={
+                <Text strong className="text-gray-700">
+                  Confirm New Password
+                </Text>
+              }
+              dependencies={["newPassword"]}
+              rules={[
+                {
+                  required: true,
+                  message: "Please confirm your new password!",
+                },
+                ({ getFieldValue }) => ({
+                  validator(_, value) {
+                    if (!value || getFieldValue("newPassword") === value) {
+                      return Promise.resolve();
+                    }
+                    return Promise.reject(
+                      new Error("The two passwords do not match!")
+                    );
+                  },
+                }),
+              ]}
+            >
+              <Input.Password
+                prefix={
+                  <LockOutlined style={{ color: token.colorTextSecondary }} />
+                }
+                placeholder="Re-enter new password"
+                iconRender={(visible) =>
+                  visible ? <EyeTwoTone /> : <EyeInvisibleOutlined />
+                }
+                size="large"
+                className="rounded-lg hover:border-blue-400 focus:border-blue-500"
+              />
+            </Form.Item>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.6 }}
+          >
+            <Form.Item>
+              <Button
+                type="primary"
+                htmlType="submit"
+                loading={loading}
+                block
+                size="large"
+                className="rounded-lg h-12 font-semibold mt-2 transition-all"
+                style={{
+                  background: token.colorPrimary,
+                  boxShadow: `0 4px 14px ${token.colorPrimary}40`,
+                }}
+              >
+                {loading ? (
+                  <span>Updating Security...</span>
+                ) : (
+                  <motion.span
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                  >
+                    Update Password
+                  </motion.span>
+                )}
+              </Button>
+            </Form.Item>
+          </motion.div>
+        </Form>
       </Card>
     </motion.div>
   );
 };
 
-export default Department;
+export default ChangePasswordForm;

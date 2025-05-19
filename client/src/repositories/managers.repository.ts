@@ -10,7 +10,12 @@ class ManagersRepository extends RequestRepository {
     try {
       const response = await this.api.put(
         endpoint,
-        { username: payload.username, email: payload.email },
+        {
+          firstName: payload.firstName,
+          lastName: payload.lastName,
+          username: payload.username,
+          email: payload.email,
+        },
         this.token
       );
       return response;
@@ -23,7 +28,12 @@ class ManagersRepository extends RequestRepository {
     try {
       const response = await this.api.post(
         endpoint,
-        { firstName: payload.firstName, lastName: payload.lastName, username: payload.username, email: payload.email },
+        {
+          firstName: payload.firstName,
+          lastName: payload.lastName,
+          username: payload.username,
+          email: payload.email,
+        },
         this.token
       );
       return response;
