@@ -4,40 +4,44 @@ import { AxiosData, NewService, ServiceData } from "../../utils/types";
 import { ENDPOINTS } from "../../utils/endpoints";
 import { toast } from "sonner";
 import RequestContext from "../../context/request.context/RequestContext";
+import { AxiosError } from "axios";
 
 export const useServices = (token: string) => {
   const service = new ServiceRepository(token);
   const [services, setServices] = useState<NewService>({
     name: "",
     description: "",
-    fields: "",
     categoryId: 0,
     departmentId: 0,
     isActive: true,
+    fields: "",
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<unknown>("");
   const [isServerError, setIsServerError] = useState<boolean>(false);
   const [serviceId, setServiceId] = useState<number>(0);
   const [dashboad, setDashBoard] = useState<any>(null);
-
   // get the department id from the context api
   const { departmentId, setDepartmentId } = useContext(RequestContext);
-
   // post service
   const createService = async () => {
     services.departmentId = departmentId;
     setLoading(true);
     try {
+      // convert the fields to json
+      services.fields = JSON.stringify(services.fields);
       const response = await service.createService(
         ENDPOINTS.CREATE_SERVICE,
         services
       );
-      if (response as AxiosData) {
+      if ((response as AxiosData).status === 200) {
         toast.success("service created successfully!");
         setLoading(false);
         setDepartmentId(0);
         return response as AxiosData;
+      } else {
+        toast.error((response as AxiosError).message);
+        setLoading(false);
       }
     } catch (error) {
       setError(error);

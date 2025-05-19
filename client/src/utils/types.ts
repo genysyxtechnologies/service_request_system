@@ -14,7 +14,7 @@ export interface SignIn {
 export interface NewService {
   name: string;
   description: string;
-  fields: string;
+  fields?: string;
   categoryId: number;
   isActive: boolean;
   departmentId: number;

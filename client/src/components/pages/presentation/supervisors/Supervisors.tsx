@@ -148,7 +148,7 @@ const Supervisors: React.FC = () => {
           setAvailableStatuses(Array.from(uniqueStatuses));
         }
       } catch (error) {
-        console.error("Error fetching data:", error);
+       return error
       }
     };
 

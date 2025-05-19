@@ -19,8 +19,6 @@ import {
   LoadingOutlined,
   FormOutlined,
   TagsOutlined,
-  CheckCircleFilled,
-  ExclamationCircleOutlined,
 } from "@ant-design/icons";
 
 const { Option } = Select;
@@ -37,8 +35,7 @@ const NewService: React.FC<NewServiceProps> = ({
   categoryId,
 }) => {
   const { token } = useSelector((state: any) => state.auth);
-  const { services, setServices, createService, loading, error } =
-    useServices(token);
+  const { services, setServices, createService, loading } = useServices(token);
   const [form] = Form.useForm();
   const [messageApi, contextHolder] = message.useMessage();
 
@@ -47,41 +44,10 @@ const NewService: React.FC<NewServiceProps> = ({
       await form.validateFields();
       await createService();
 
-      messageApi.success({
-        content: (
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="flex items-center gap-2"
-          >
-            <CheckCircleFilled className="text-green-500 text-lg" />
-            <span>Service created successfully!</span>
-          </motion.div>
-        ),
-        duration: 2,
-      });
-
       form.resetFields();
       onClose();
     } catch (errorInfo) {
-      // Display validation errors
-      if (errorInfo.errorFields) {
-        errorInfo.errorFields.forEach((field) => {
-          messageApi.error({
-            content: (
-              <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="flex items-center gap-2"
-              >
-                <ExclamationCircleOutlined className="text-red-500 text-lg" />
-                <span>{field.errors[0]}</span>
-              </motion.div>
-            ),
-            duration: 3,
-          });
-        });
-      }
+      return errorInfo;
     }
   };
 
@@ -264,7 +230,7 @@ const NewService: React.FC<NewServiceProps> = ({
                 >
                   <Select
                     value={services.fields}
-                    onChange={(_: string='') =>
+                    onChange={(_: string = "") =>
                       setServices({ ...services, fields: JSON.stringify("") })
                     }
                     placeholder="Select a category"
