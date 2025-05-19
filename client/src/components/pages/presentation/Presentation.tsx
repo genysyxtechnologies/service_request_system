@@ -7,7 +7,7 @@ function Presentation() {
     <div className="w-full h-screen flex items-cente justify-center bg-secondary p-6 overflow-auto z-10">
       <Sidebar />
       <div className="flex-1 ml-[6rem]">
-        <div className="fixed top-6 z-10 left-[7.5rem] right-5">
+        <div className="sticky top-0 z-10 left-[7.5rem] right-5">
           <Navbar />
         </div>
         <div className="mt-32">
