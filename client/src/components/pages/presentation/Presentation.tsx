@@ -10,7 +10,7 @@ function Presentation() {
         <div className="sticky top-0 z-10 left-[7.5rem] right-5">
           <Navbar />
         </div>
-        <div className="mt-32">
+        <div className="mt-16">
           <Outlet />
         </div>
       </div>

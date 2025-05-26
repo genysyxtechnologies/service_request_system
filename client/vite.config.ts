@@ -6,7 +6,7 @@ export default defineConfig({
   server: {
     proxy: {
       "/api": {
-        target: "https://dev.nsuk.edu.ng",
+        target: "https://services.nsuk.edu.ng",
         changeOrigin: true,
       },
     },
