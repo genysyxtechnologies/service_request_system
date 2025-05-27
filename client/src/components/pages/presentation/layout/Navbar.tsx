@@ -8,6 +8,7 @@ import { useSelector } from "react-redux";
 function Navbar() {
   const { user } = useSelector((state: any) => state.auth);
 
+
   return (
     <motion.div
       initial={{ opacity: 0, y: -20 }}

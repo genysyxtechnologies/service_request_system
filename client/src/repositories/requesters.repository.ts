@@ -5,7 +5,7 @@ class RequestersRepository extends RequestRepository {
     super(token);
   }
 
-  updateRequesterPassword(endpoint: string) {
+  updateRequester(endpoint: string) {
     try {
       const response = this.api.put(endpoint, {}, this.token);
       return response;

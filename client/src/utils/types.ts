@@ -73,14 +73,12 @@ export interface Service {
   category: string;
 }
 
-export const ROLES = {
-  DEFAULT_ROLE: "REQUESTER",
-};
 
 export interface Department {
   id: number;
   name: string;
   code: string;
+  hod: string
 }
 
 export interface ChangePasswordFormValues {

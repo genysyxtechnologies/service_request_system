@@ -3,7 +3,6 @@ import {
   AxiosData,
   AxiosError,
   ChangePasswordFormValues,
-  ROLES,
   SignIn,
   SignUp,
 } from "../../utils/types";
@@ -13,10 +12,12 @@ import {
   addToken,
   addUser,
   setIsAdmin,
+  setRoles,
 } from "../../redux/features/feature.auth";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { ENDPOINTS } from "../../utils/endpoints";
+import { ROLES } from "../../utils/roles";
 
 export const useAuth = () => {
   /*   reset(); */
@@ -114,8 +115,13 @@ export const useAuth = () => {
         toast.success("Successfully logged in!");
         dispatch(addUser((response as AxiosData).data.user));
         dispatch(addToken((response as AxiosData).data.token));
-        !(response as AxiosData).data.user.roles.includes(ROLES.DEFAULT_ROLE) &&
+        if ((response as AxiosData).data.user.roles.includes(ROLES.SUPER_ADMIN)) {
           dispatch(setIsAdmin(true));
+        } else {
+          dispatch(setIsAdmin(false));
+        }
+        dispatch(setRoles((response as AxiosData).data.user.roles));
+
         navigate("/app");
       } else {
         toast.error(

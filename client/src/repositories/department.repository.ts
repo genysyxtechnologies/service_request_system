@@ -1,6 +1,5 @@
 import { Api } from "../utils/api";
 import { ServiceRepository } from "./service.repository";
-import { ENDPOINTS } from "../utils/endpoints";
 
 class DepartmentRepository extends ServiceRepository {
   constructor(token?: string) {
@@ -8,10 +7,10 @@ class DepartmentRepository extends ServiceRepository {
   }
   api = new Api();
 
-  syncDepartments = async () => {
+  syncDepartments = async (endpoint: string) => {
     try {
       const response = await this.api.post(
-        ENDPOINTS.SYNC_DEPARTMENTS,
+        endpoint,
         {},
         this.token
       );

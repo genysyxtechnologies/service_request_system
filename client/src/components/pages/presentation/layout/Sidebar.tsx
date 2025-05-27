@@ -15,7 +15,9 @@ import { useSelector } from "react-redux";
 
 function Sidebar() {
   const navigate = useNavigate();
-  const { isAdmin } = useSelector((state: any) => state.auth);
+  const { isAdmin} = useSelector((state: any) => state.auth);
+
+
 
   // Tooltip content for each button
   const tooltips = [
@@ -27,6 +29,8 @@ function Sidebar() {
     "Settings",
     "Manage Users",
   ];
+
+
 
   const [sideBarItems, _] = useState([
     {

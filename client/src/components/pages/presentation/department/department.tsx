@@ -35,6 +35,7 @@ interface DepartmentItem {
   name: string;
   code: string;
   id: number;
+  hod: string;
 }
 
 type DataIndex = keyof DepartmentItem;
@@ -346,6 +347,40 @@ const Department: React.FC<DepartmentProps> = ({ showButton = false }) => {
         </motion.span>
       ),
     },
+    {
+      title: (
+        <span className="text-gray-600 font-medium flex items-center">
+          <BankOutlined className="mr-2 text-indigo-500" /> HOD
+        </span>
+      ),
+      dataIndex: "hod",
+      key: "hod",
+      ...getColumnSearchProps("hod"),
+      render: (text: string, record: DepartmentItem, index: number) => (
+        <motion.div
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{
+            duration: 0.3,
+            delay: index * 0.2,
+            type: "spring",
+            stiffness: 150,
+          }}
+          whileHover={{ scale: 1.02 }}
+          className="flex items-center"
+        >
+          {text === "NO HOD" ? (
+            <Tag color="orange" className="px-3 py-1 rounded-lg text-sm font-medium border-0">
+              {text}
+            </Tag>
+          ) : (
+            <Tag color="blue" className="px-3 py-1 rounded-lg text-sm font-medium border-0 bg-blue-50 text-blue-700">
+              {text}
+            </Tag>
+          )}
+        </motion.div>
+      ),
+    },
   ];
 
   const actionColumn = {
@@ -409,7 +444,7 @@ const Department: React.FC<DepartmentProps> = ({ showButton = false }) => {
                 <BankOutlined className="mr-3 text-indigo-600" /> Departments
               </Title>
               <Text type="secondary" className="text-sm">
-                Manage and filter department information
+                Manage departments and their Heads of Department (HOD)
               </Text>
             </div>
 
@@ -546,7 +581,7 @@ const Department: React.FC<DepartmentProps> = ({ showButton = false }) => {
                     </Text>
                   ),
                 }}
-                className="rounded-lg [&_th]:bg-gray-50 [&_th]:text-indigo-900 [&_th]:font-medium [&_th]:py-4 [&_td]:py-3"
+                className="rounded-lg [&_th]:bg-gray-50 [&_th]:text-indigo-900 [&_th]:font-medium [&_th]:py-4 [&_td]:py-3 shadow-sm"
                 loading={loading}
                 components={{
                   body: {

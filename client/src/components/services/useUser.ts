@@ -25,10 +25,25 @@ export const useUser = (token: string) => {
     }
   };
 
+  // fetch all user roles
+  const fetchAllUserRoles = async () => {
+    try {
+      const response = await userRepository.getUsers(ENDPOINTS.GET_USER_ROLES);
+      if ((response as AxiosData).status === 200) {
+        console.log("THIS IS THE RESPONSE OF THE USER ROLES: ", response);
+        return (response as AxiosData).data;
+      }
+    } catch (error) {
+      setError(error);
+      return error;
+    }
+  };
+
   return {
     allUsers,
     loading,
     error,
     fetchAllUsers,
+    fetchAllUserRoles,
   };
 };

@@ -24,6 +24,9 @@ export const ENDPOINTS = {
   GET_USERS: "/api/v1/users/requesters",
   PASSWORD_UPDATE: "/api/auth/change-password",
   RESET_REQUESTER_PASSWORD: "/api/v1/users",
+  GET_USER_ROLES: "/api/v1/users/roles",
+  SYNC_USERS: "/api/auth/synchronize",
+  ASSIGN_ROLE_TO_USER: "/api/v1/users",
 
   // DEPARTMENT
   SYNC_DEPARTMENTS: "/api/v1/departments/synchronize",

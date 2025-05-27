@@ -14,7 +14,7 @@ const useDepartment = (token: string) => {
   const syncDepartments = async () => {
     setLoading(true);
     try {
-      const response = await department.syncDepartments();
+      const response = await department.syncDepartments(ENDPOINTS.SYNC_DEPARTMENTS);
       setLoading(false);
       if ((response as AxiosData).status === 202) {
         return toast.success("Departments synced successfully!");
