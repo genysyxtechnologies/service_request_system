@@ -3,14 +3,17 @@ import axios, { AxiosError } from "axios";
 import { handleError } from "./errors";
 
 export class Api {
+ 
   constructor() {}
 
   // POST request
   async post(url: string, data: Record<string, string | any>, token?: string) {
+    console.log("HELLO WORLD")
     try {
       const response = axios.post(url, data, {
         headers: token ? { Authorization: `Bearer ${token}` } : {},
       });
+      console.log("AND THIS IS THE RESPONSE: ", response)
       return Promise.resolve(response);
     } catch (error) {
       return Promise.reject(error);

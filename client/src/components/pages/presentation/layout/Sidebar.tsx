@@ -12,12 +12,11 @@ import supervisorsIcon from "../../../../assets/images/supervisors-icon.svg";
 import { NavLink, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { useSelector } from "react-redux";
+import { isUserAuthorized, ROLES } from "../../../../utils/roles";
 
 function Sidebar() {
   const navigate = useNavigate();
-  const { isAdmin} = useSelector((state: any) => state.auth);
-
-
+  const { isAdmin, roles } = useSelector((state: any) => state.auth);
 
   // Tooltip content for each button
   const tooltips = [
@@ -29,8 +28,6 @@ function Sidebar() {
     "Settings",
     "Manage Users",
   ];
-
-
 
   const [sideBarItems, _] = useState([
     {
@@ -59,8 +56,8 @@ function Sidebar() {
       title: "Supervisors",
       icon: supervisorsIcon,
       path: "/app/supervisor",
-      disable: !isAdmin,
-      hidden: !isAdmin,
+      disable: !isAdmin && !isUserAuthorized(roles, ROLES.SUPERVISOR),
+      hidden: !isAdmin && !isUserAuthorized(roles, ROLES.SUPERVISOR),
     },
     {
       title: "Manage Account",
@@ -78,24 +75,24 @@ function Sidebar() {
   // Animation variants for sidebar items
   const sidebarVariants = {
     hidden: { opacity: 0, x: -20 },
-    visible: { 
-      opacity: 1, 
+    visible: {
+      opacity: 1,
       x: 0,
       transition: {
         staggerChildren: 0.1,
-        delayChildren: 0.2
-      }
-    }
+        delayChildren: 0.2,
+      },
+    },
   };
 
   const itemVariants = {
     hidden: { opacity: 0, x: -20 },
-    visible: { opacity: 1, x: 0 }
+    visible: { opacity: 1, x: 0 },
   };
 
   return (
     <div>
-      <motion.div 
+      <motion.div
         className="bg-white w-20 h-auto overflow-y-auto fixed top-6 bottom-6 left-6 rounded-xl flex py-6 transition-all duration-300 select-none shadow-lg flex-col items-center gap-7"
         initial={{ x: -100, opacity: 0 }}
         animate={{ x: 0, opacity: 1 }}
@@ -127,15 +124,15 @@ function Sidebar() {
         </motion.div>
 
         <div className="w-full h-px bg-gray-200"></div>
-        
-        <motion.div 
+
+        <motion.div
           className="flex flex-col items-center gap-7 w-full"
           variants={sidebarVariants}
           initial="hidden"
           animate="visible"
         >
           {sideBarItems.map((item) => (
-            <motion.div 
+            <motion.div
               key={item.title}
               variants={itemVariants}
               transition={{ type: "spring", stiffness: 300, damping: 24 }}
@@ -151,34 +148,48 @@ function Sidebar() {
                   to={item.path}
                   className={({ isActive }) => `
                     relative flex justify-center items-center w-12 h-12 rounded-xl
-                    ${item.disable ? "cursor-not-allowed opacity-50" : "cursor-pointer"}
+                    ${
+                      item.disable
+                        ? "cursor-not-allowed opacity-50"
+                        : "cursor-pointer"
+                    }
                     ${isActive ? "nav-item-active" : ""}
                   `}
                 >
                   {({ isActive }) => (
                     <>
                       {isActive && (
-                        <motion.div 
+                        <motion.div
                           className="absolute inset-0 bg-blue-50 rounded-xl z-0"
                           layoutId="activeBackground"
                           initial={{ borderRadius: 12 }}
                           animate={{ borderRadius: 12 }}
-                          transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                          transition={{
+                            type: "spring",
+                            stiffness: 300,
+                            damping: 30,
+                          }}
                         />
                       )}
-                      <motion.div 
+                      <motion.div
                         className="relative z-10 flex items-center justify-center"
                         whileHover={{ scale: 1.15 }}
                         whileTap={{ scale: 0.95 }}
-                        transition={{ type: "spring", stiffness: 400, damping: 17 }}
+                        transition={{
+                          type: "spring",
+                          stiffness: 400,
+                          damping: 17,
+                        }}
                       >
                         <img
                           src={item.icon}
                           alt={item.title}
-                          className={`w-6 h-6 ${isActive ? "filter-active" : ""}`}
+                          className={`w-6 h-6 ${
+                            isActive ? "filter-active" : ""
+                          }`}
                         />
                         {isActive && (
-                          <motion.div 
+                          <motion.div
                             className="absolute -right-1 -top-1 w-2 h-2 bg-blue-500 rounded-full"
                             initial={{ scale: 0 }}
                             animate={{ scale: 1 }}

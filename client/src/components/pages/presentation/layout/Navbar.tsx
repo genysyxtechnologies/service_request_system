@@ -6,7 +6,7 @@ import { CiSearch } from "react-icons/ci";
 import { useSelector } from "react-redux";
 
 function Navbar() {
-  const { user } = useSelector((state: any) => state.auth);
+  const { user} = useSelector((state: any) => state.auth);
 
 
   return (

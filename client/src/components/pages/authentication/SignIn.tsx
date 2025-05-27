@@ -401,11 +401,11 @@ function SignIn() {
               className="flex items-center gap-4"
             >
               <hr className="w-full border-gray-200" />
-              <span className="text-gray-400">Or</span>
-              <hr className="w-full border-gray-200" />
+              {/* <span className="text-gray-400">Or</span>
+              <hr className="w-full border-gray-200" /> */}
             </motion.div>
 
-            <motion.div
+           {/*  <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 1 }}
@@ -423,7 +423,7 @@ function SignIn() {
               >
                 {isSignIn ? "Sign up" : "Sign in"}
               </motion.span>
-            </motion.div>
+            </motion.div> */}
           </motion.div>
         </motion.div>
       </motion.div>
