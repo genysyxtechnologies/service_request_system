@@ -3,6 +3,7 @@ import { Modal, Form, Input, Select, Button, message } from "antd";
 import { useSelector } from "react-redux";
 import { ServiceData } from "../../../../utils/types";
 import { useServices } from "../../../services/useServices";
+import { useCategory } from "../../../services/useCategory";
 import AuthAnimation from "../../../animations/AuthAnimation";
 
 const { Option } = Select;
@@ -19,17 +20,19 @@ const UpdateServices: React.FC<UpdateServicesProps> = ({
   serviceData,
 }) => {
   const [form] = Form.useForm();
-  const token = useSelector((state: any) => state.auth.token);
+  const { token, user } = useSelector((state: any) => state.auth);
   const { updateService, loading } = useServices(token);
+  const { allCategories, fetchCategories } = useCategory(token, user?.role === 'ADMIN' || user?.role === 'SUPER_ADMIN');
 
   useEffect(() => {
     if (visible && serviceData) {
+      fetchCategories();
       form.setFieldsValue({
         name: serviceData.name,
         description: serviceData.description,
         fields: JSON.stringify(""),
         isActive: serviceData.isActive,
-        category: serviceData.categoryName,
+        category: serviceData.categoryId,
         categoryId: serviceData.categoryId,
         departmentId: serviceData.departmentId,
       });
@@ -42,7 +45,7 @@ const UpdateServices: React.FC<UpdateServicesProps> = ({
     try {
       const values = await form.validateFields();
       values.fields = JSON.stringify("");
-      values.categoryId = serviceData?.categoryId;
+      values.categoryId = values.category;
       values.departmentId = serviceData?.departmentId;
       await updateService(values, serviceData?.id!);
 
@@ -86,10 +89,11 @@ const UpdateServices: React.FC<UpdateServicesProps> = ({
           rules={[{ required: true, message: "Please select a category." }]}
         >
           <Select placeholder="Select a category">
-            <Option value="IT Support">IT Support</Option>
-            <Option value="Consulting">Consulting</Option>
-            <Option value="Development">Development</Option>
-            <Option value="NEW REQUEST">NEW REQUEST</Option>
+            {allCategories.map((category) => (
+              <Option key={category.id} value={category.id}>
+                {category.name}
+              </Option>
+            ))}
           </Select>
         </Form.Item>
 

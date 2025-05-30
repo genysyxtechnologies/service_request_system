@@ -5,15 +5,16 @@ import Presentation from "./components/pages/presentation/Presentation";
 import Home from "./components/pages/presentation/home/Home";
 import Services from "./components/pages/presentation/Services/Services";
 import RequestTable from "./components/pages/presentation/request/RequestTable";
-import Category from "./components/pages/presentation/category/Services";
+import ManageRequests from "./components/pages/presentation/request/ManageRequests";
 import Dashboard from "./components/pages/presentation/dashboard/Dashboard";
+import Department from "./components/pages/presentation/department/department";
+import ServiceCategory from "./components/pages/presentation/category/ServiceCategory";
+import CategoryPage from "./components/pages/presentation/category/Category";
 import { Toaster } from "sonner";
 import RouterSecurity from "./RouterSecurity";
-import Requesters from "./components/pages/presentation/users/Requesters";
 import RequestContextProvider from "./context/request.context/RequestContextProvider";
 import NotificationsPage from "./components/pages/presentation/notification/NotificationPage";
 import Profile from "./components/pages/presentation/profile/Profile";
-import Managers from "./components/pages/presentation/users/Managers";
 import Users from "./components/pages/presentation/users/Users";
 import Supervisors from "./components/pages/presentation/supervisors/Supervisors";
 
@@ -37,7 +38,10 @@ function App() {
           <Route index element={<Home />} />
           <Route path="services" element={<Services />} />
           <Route path="request" element={<RequestTable />} />
-          <Route path="category" element={<Category />} />
+          <Route path="manage-requests" element={<ManageRequests />} />
+          <Route path="department" element={<Department />} />
+          <Route path="service-category" element={<ServiceCategory />} />
+          <Route path="categories" element={<CategoryPage />} />
           <Route path="notification" element={<NotificationsPage />} />
           <Route path="dashboard" element={<Dashboard />} />
          {/*  <Route path="requesters" element={<Requesters />} />

@@ -14,9 +14,11 @@ interface RequestItem {
   id: number;
   requestData: string;
   serviceName: string;
+  submittedData: string;
   status: string;
   submissionDate: string;
   submittedBy: string;
+  userName: string;
   attachmentUrl: string | null;
 }
 
@@ -90,17 +92,17 @@ export const useRequest = (token: string, isAdmin?: boolean) => {
   };
 
   // retch requests with pagination
-  const fetchRequests = async (page: number = 1, pageSize: number = 10) => {
+  const fetchRequests = async (page: number = 1, pageSize: number = 10, hod: boolean = false) => {
     setLoading(true);
     try {
       const response = await service.getAllRequests(
         `${
-          isAdmin ? ENDPOINTS.GET_REQUEST : ENDPOINTS.GET_REQUESTER_REQUESTS
+          (isAdmin || hod) ? ENDPOINTS.GET_REQUEST : ENDPOINTS.GET_REQUESTER_REQUESTS
         }?page=${page - 1}&size=${pageSize}`
       );
 
       if ((response as AxiosData).status === 200) {
-        const data: PaginationData = (response as AxiosData).data;
+        const data: PaginationData = ((response as AxiosData).data as unknown as PaginationData);
         setRequests(data.content);
         setPagination({
           current: data.number + 1,
@@ -108,6 +110,7 @@ export const useRequest = (token: string, isAdmin?: boolean) => {
           total: data.totalElements,
         });
       }
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (error) {
       setError("Failed to fetch requests");
       message.error("Failed to load requests");

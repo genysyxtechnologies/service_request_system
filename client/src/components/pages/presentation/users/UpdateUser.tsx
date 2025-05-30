@@ -30,7 +30,7 @@ const UpdateUserForm: React.FC<UserUpdateFormProps> = ({
 }) => {
   const [form] = useForm();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [currentAvatar, setCurrentAvatar] = useState(avatar);
+  const [currentAvatar, ] = useState(avatar);
 
   const { token, user } = useSelector((state: any) => state.auth);
   const { updateUser } = useManagers(token);
@@ -57,6 +57,7 @@ const UpdateUserForm: React.FC<UserUpdateFormProps> = ({
       }
       await updateUser({ ...values, id: user.id });
       message.success("User updated successfully!");
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (error) {
       message.error("Failed to update user. Please try again.");
     } finally {

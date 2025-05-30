@@ -7,6 +7,7 @@ export default defineConfig({
     proxy: {
       "/api": {
         target: "https://services.nsuk.edu.ng",
+        // target: "http://localhost:8080",
         changeOrigin: true,
       },
     },

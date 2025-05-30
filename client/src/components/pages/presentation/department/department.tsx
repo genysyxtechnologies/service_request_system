@@ -47,13 +47,13 @@ interface DepartmentProps {
 const Department: React.FC<DepartmentProps> = ({ showButton = false }) => {
   // These state variables are used by the column search functionality
   // searchText is used in the filter functions
-  const [searchText, setSearchText] = useState("");
+  const [, setSearchText] = useState("");
   const [searchedColumn, setSearchedColumn] = useState("");
   const [filterMode, setFilterMode] = useState<"search" | "select">("search");
   const [selectedFilter, setSelectedFilter] = useState<string[]>([]);
   const [selectedDepartments, setSelectedDepartments] = useState<string[]>([]);
   const [isSyncing, setIsSyncing] = useState(false);
-  const searchInput = useRef<Input | null>(null);
+  const searchInput = useRef<any | null>(null);
   const { token } = useSelector(
     (state: { auth: { token: string } }) => state.auth
   );
@@ -193,7 +193,9 @@ const Department: React.FC<DepartmentProps> = ({ showButton = false }) => {
               <Button
                 onClick={() => {
                   setSelectedFilter([]);
-                  clearFilters && handleReset(clearFilters);
+                  if (clearFilters) {
+                    handleReset(clearFilters);
+                  }
                 }}
                 size="middle"
                 className="flex-1 hover:bg-gray-50 transition-all duration-300"
@@ -275,7 +277,8 @@ const Department: React.FC<DepartmentProps> = ({ showButton = false }) => {
         key: "sync",
         duration: 2,
       });
-    } catch (error) {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    } catch (_error) {
       // Error is logged by the message component
       message.error({
         content: (
@@ -304,7 +307,7 @@ const Department: React.FC<DepartmentProps> = ({ showButton = false }) => {
       dataIndex: "name",
       key: "name",
       ...getColumnSearchProps("name"),
-      render: (text: string, record: DepartmentItem, index: number) => (
+      render: (text: string, _record: DepartmentItem, index: number) => (
         <motion.div
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
@@ -330,7 +333,7 @@ const Department: React.FC<DepartmentProps> = ({ showButton = false }) => {
       dataIndex: "code",
       key: "code",
       ...getColumnSearchProps("code"),
-      render: (text: string, record: DepartmentItem, index: number) => (
+      render: (text: string, _record: DepartmentItem, index: number) => (
         <motion.span
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -356,7 +359,7 @@ const Department: React.FC<DepartmentProps> = ({ showButton = false }) => {
       dataIndex: "hod",
       key: "hod",
       ...getColumnSearchProps("hod"),
-      render: (text: string, record: DepartmentItem, index: number) => (
+      render: (text: string, _record: DepartmentItem, index: number) => (
         <motion.div
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -390,7 +393,7 @@ const Department: React.FC<DepartmentProps> = ({ showButton = false }) => {
       </span>
     ),
     key: "actions",
-    render: (text: string, record: DepartmentItem, index: number) => (
+    render: (_text: string, record: DepartmentItem, index: number) => (
       <motion.div
         initial={{ opacity: 0, scale: 0.8 }}
         animate={{ opacity: 1, scale: 1 }}

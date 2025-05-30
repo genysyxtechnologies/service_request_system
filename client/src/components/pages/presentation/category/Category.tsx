@@ -75,7 +75,7 @@ const Services = () => {
       title: "Name",
       dataIndex: "name",
       key: "name",
-      render: (text: string, record: any, index: number) => (
+      render: (text: string, _record: any, index: number) => (
         <motion.div
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
@@ -259,7 +259,7 @@ const Services = () => {
             showSizeChanger
             pageSizeOptions={["10", "20", "50", "100"]}
             className="custom-pagination"
-            itemRender={(page, type, originalElement) => (
+            itemRender={(_page, type, originalElement) => (
               <motion.div
                 whileHover={{ scale: type === "page" ? 1.1 : 1 }}
                 whileTap={{ scale: 0.95 }}

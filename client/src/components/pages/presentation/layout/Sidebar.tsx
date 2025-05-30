@@ -2,12 +2,14 @@ import "./Sidebar.css";
 import { Tooltip } from "antd";
 import { motion } from "framer-motion";
 import image2 from "../../../../assets/images/signin/image2.png";
-import image4 from "../../../../assets/images/presentation/image2.png";
 import image5 from "../../../../assets/images/presentation/image3.png";
 import image6 from "../../../../assets/images/signin/image5.svg";
 import image7 from "../../../../assets/images/user/image1.svg";
 import image8 from "../../../../assets/images/presentation/image5.svg";
 import supervisorsIcon from "../../../../assets/images/supervisors-icon.svg";
+import departmentIcon from "../../../../assets/images/dashboard/image1.png";
+import serviceCategoryIcon from "../../../../assets/images/presentation/image4.png";
+import categoryIcon from "../../../../assets/images/services/image1.png";
 
 import { NavLink, useNavigate } from "react-router-dom";
 import { useState } from "react";
@@ -20,15 +22,19 @@ function Sidebar() {
 
   // Tooltip content for each button
   const tooltips = [
-    "Home Dashboard",
     "Service Requests",
-    "Manage Services",
-    "Manage Categories",
-    "Analytics Dashboard",
-    "Settings",
+    "Manage Requests",
+    "Departments",
+    "Service Categories",
+    "Categories",
+    "Notifications",
     "Manage Users",
+    "Supervisors",
+    "Manage Account",
+    "Logout",
   ];
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [sideBarItems, _] = useState([
     {
       title: "Service Requests",
@@ -36,9 +42,30 @@ function Sidebar() {
       path: "/app/request",
     },
     {
-      title: "Manage Categories",
-      icon: image4,
-      path: "/app/category",
+      title: "Manage Requests",
+      icon: image2,
+      path: "/app/manage-requests",
+      disable: !isAdmin && !isUserAuthorized(roles, ROLES.HOD),
+      hidden: !isAdmin && !isUserAuthorized(roles, ROLES.HOD),
+    },
+    {
+      title: "Departments",
+      icon: departmentIcon,
+      path: "/app/department",
+      disable: !isAdmin,
+      hidden: !isAdmin,
+    },
+    {
+      title: "Service Categories",
+      icon: serviceCategoryIcon,
+      path: "/app/service-category",
+    },
+    {
+      title: "Categories",
+      icon: categoryIcon,
+      path: "/app/categories",
+      disable: !isAdmin,
+      hidden: !isAdmin,
     },
     {
       title: "Notification",

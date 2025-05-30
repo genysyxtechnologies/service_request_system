@@ -63,6 +63,7 @@ interface RequestData {
   createdAt: number[];
   // Add other fields as they become available in the API response
   requestData?: string;
+  submittedData?: string;
   serviceName?: string;
   userName?: string;
   priority?: string;
@@ -731,7 +732,7 @@ const Supervisors: React.FC = () => {
                         </p>
                         <p className="text-gray-600">
                           <span className="font-medium">Submitted:</span>{" "}
-                          {Array.isArray(record.createdAt) && record.createdAt.length >= 7 ? 
+                          {Array.isArray(record.createdAt) && record.createdAt.length >= 7 ?
                             dayjs(new Date(
                               record.createdAt[0], // year
                               record.createdAt[1] - 1, // month (0-indexed in JS Date)
@@ -739,7 +740,7 @@ const Supervisors: React.FC = () => {
                               record.createdAt[3], // hour
                               record.createdAt[4], // minute
                               record.createdAt[5]  // second
-                            )).format("MMMM D, YYYY h:mm A") : 
+                            )).format("MMMM D, YYYY h:mm A") :
                             "Invalid date"
                           }
                         </p>

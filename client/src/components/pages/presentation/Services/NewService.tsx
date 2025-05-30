@@ -12,6 +12,7 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import { useServices } from "../../../services/useServices";
 import { useSelector } from "react-redux";
+import { useCategory } from "../../../services/useCategory";
 import {
   FileTextOutlined,
   AppstoreOutlined,
@@ -34,10 +35,13 @@ const NewService: React.FC<NewServiceProps> = ({
   onClose,
   categoryId,
 }) => {
-  const { token } = useSelector((state: any) => state.auth);
+  const { token, user } = useSelector((state: any) => state.auth);
   const { services, setServices, createService, loading } = useServices(token);
+  const { allCategories, fetchCategories } = useCategory(token, user?.roles.includes('ADMIN') || user?.roles.includes('SUPER_ADMIN'));
   const [form] = Form.useForm();
-  const [messageApi, contextHolder] = message.useMessage();
+  const [, contextHolder] = message.useMessage();
+
+  console.log(user)
 
   const handleSave = async () => {
     try {
@@ -45,18 +49,38 @@ const NewService: React.FC<NewServiceProps> = ({
       await createService();
 
       form.resetFields();
+      // Reset services state to initial values
+      setServices({
+        name: "",
+        description: "",
+        categoryId: 0,
+        departmentId: 0,
+        isActive: true,
+        fields: "",
+      });
       onClose();
     } catch (errorInfo) {
       return errorInfo;
     }
   };
 
-  // watch for visibility canges before adding categiryId
+  // watch for visibility changes before adding categoryId
   useEffect(() => {
     if (visible) {
-      setServices({ ...services, categoryId });
+      // Reset form and services state when dialog opens
+      form.resetFields();
+      setServices({
+        name: "",
+        description: "",
+        categoryId: categoryId,
+        departmentId: 0,
+        isActive: true,
+        fields: "",
+      });
+      form.setFieldsValue({ category: categoryId });
+      fetchCategories();
     }
-  }, [visible]);
+  }, [visible, categoryId]);
 
   return (
     <>
@@ -227,11 +251,12 @@ const NewService: React.FC<NewServiceProps> = ({
                   ]}
                   tooltip="Select the appropriate category for this service"
                   validateTrigger={["onChange", "onBlur"]}
+                  initialValue={categoryId}
                 >
                   <Select
-                    value={services.fields}
-                    onChange={(_: string = "") =>
-                      setServices({ ...services, fields: JSON.stringify("") })
+                    value={services.categoryId}
+                    onChange={(value: number) =>
+                      setServices({ ...services, categoryId: value })
                     }
                     placeholder="Select a category"
                     className="rounded-xl h-12 [&_.ant-select-selector]:rounded-xl [&_.ant-select-selector]:h-12 [&_.ant-select-selector]:flex [&_.ant-select-selector]:items-center [&_.ant-select-selector]:border-gray-300 [&_.ant-select-selector:hover]:border-blue-400 [&_.ant-select-selector]:transition-all [&_.ant-select-selector]:duration-300 [&_.ant-select-selection-item]:flex [&_.ant-select-selection-item]:items-center shadow-sm"
@@ -240,9 +265,11 @@ const NewService: React.FC<NewServiceProps> = ({
                       boxShadow: "0 8px 24px rgba(0, 0, 0, 0.12)",
                     }}
                   >
-                    <Option value="IT Support">IT Support</Option>
-                    <Option value="Consulting">Consulting</Option>
-                    <Option value="Development">Development</Option>
+                    {allCategories.map((category) => (
+                      <Option key={category.id} value={category.id}>
+                        {category.name}
+                      </Option>
+                    ))}
                   </Select>
                 </Form.Item>
               </motion.div>
@@ -258,6 +285,15 @@ const NewService: React.FC<NewServiceProps> = ({
                 <Button
                   onClick={() => {
                     form.resetFields();
+                    // Reset services state when canceling
+                    setServices({
+                      name: "",
+                      description: "",
+                      categoryId: 0,
+                      departmentId: 0,
+                      isActive: true,
+                      fields: "",
+                    });
                     onClose();
                   }}
                   className="h-12 px-6 rounded-xl border border-gray-300 text-gray-700 hover:bg-gray-50 hover:text-gray-800 hover:border-gray-400 transition-all duration-300 flex items-center"

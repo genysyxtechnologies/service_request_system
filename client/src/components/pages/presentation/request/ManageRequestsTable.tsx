@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useState } from "react";
-import { Table, Select, Pagination, Tag, Spin, Empty } from "antd";
+import { Table, Select, Pagination, Tag, Spin, Empty, Button, message } from "antd";
 import { motion } from "framer-motion";
 import { useRequest } from "../../../services/useRequest";
 import { useSelector } from "react-redux";
@@ -7,6 +7,7 @@ import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 import UpdateRequestStatusModal from "./UpdateRequest";
 import RequestContext from "../../../../context/request.context/RequestContext";
+import { EditOutlined } from "@ant-design/icons";
 
 dayjs.extend(relativeTime);
 
@@ -17,9 +18,9 @@ const statusColors: Record<string, string> = {
   REJECTED: "bg-red-100 text-red-800",
 };
 
-const RequestTable: React.FC = () => {
-  const { refreshRequest } = useContext(RequestContext);
-  const { token, isAdmin } = useSelector((state: any) => state.auth);
+const ManageRequestsTable: React.FC = () => {
+  const { refreshRequest, setRefreshRequest } = useContext(RequestContext);
+  const { token, isAdmin, roles } = useSelector((state: any) => state.auth);
   const [filter, setFilter] = useState<string>("ALL");
   const [selectedRow, setSelectedRow] = useState<number | null>(null);
   const { requests, fetchRequests, loading, pagination } = useRequest(
@@ -27,23 +28,42 @@ const RequestTable: React.FC = () => {
     isAdmin
   );
   const [isModalVisible, setIsModalVisible] = useState(false);
-  const [requestId, _] = useState<number>(0);
+  const [selectedRequest, setSelectedRequest] = useState<any>(null);
+  const [messageApi, contextHolder] = message.useMessage();
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const handleStatusUpdate = async (_status: string) => {};
+  // Check if user is HOD
+  const isHOD = roles?.includes("HOD") || isAdmin;
 
-  const handleTableChange = (pagination: any) => {
-    fetchRequests(pagination.current, pagination.pageSize);
+  const handleStatusUpdate = (record: any) => {
+    setSelectedRequest(record);
+    setIsModalVisible(true);
   };
 
-  // LOAD DATA IMMEDIATELY THE COMPONENT MOUNTED
+  const handleModalClose = () => {
+    setIsModalVisible(false);
+    setSelectedRequest(null);
+  };
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const handleModalUpdate = async (_status: string) => {
+    try {
+      // Refresh the table after successful update
+      await fetchRequests();
+      setRefreshRequest(!refreshRequest);
+      messageApi.success("Request status updated successfully");
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    } catch (_error) {
+      messageApi.error("Failed to update request status");
+    }
+  };
+// LOAD DATA IMMEDIATELY THE COMPONENT MOUNTED
   useEffect(() => {
-    fetchRequests();
+    fetchRequests(0, 10, true);
   }, []);
 
   // LOAD TABLE DATA AFTER A SUCCESSFULLY UPDATE OF REQUEST
   useEffect(() => {
-    fetchRequests();
+    fetchRequests(0, 10, true);
   }, [refreshRequest]);
 
   const columns = [
@@ -83,6 +103,14 @@ const RequestTable: React.FC = () => {
       ),
     },
     {
+      title: "From",
+      dataIndex: "userDepartmentName",
+      key: "userDepartmentName",
+      render: (text: string) => (
+        <span className="text-gray-600">{text || "N/A"}</span>
+      ),
+    },
+    {
       title: "Status",
       dataIndex: "status",
       key: "status",
@@ -114,16 +142,31 @@ const RequestTable: React.FC = () => {
       title: "Actions",
       key: "actions",
       render: (_text: string, record: any) => (
-        <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.95 }}>
-          <button
-            onClick={() =>
-              setSelectedRow(record.id === selectedRow ? null : record.id)
-            }
-            className="text-indigo-600 hover:text-indigo-800 font-medium transition-colors"
-          >
-            {record.id === selectedRow ? "Hide Details" : "View Details"}
-          </button>
-        </motion.div>
+        <div className="flex gap-2">
+          <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.95 }}>
+            <button
+              onClick={() =>
+                setSelectedRow(record.id === selectedRow ? null : record.id)
+              }
+              className="text-indigo-600 hover:text-indigo-800 font-medium transition-colors"
+            >
+              {record.id === selectedRow ? "Hide Details" : "View Details"}
+            </button>
+          </motion.div>
+          {isHOD && (
+            <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.95 }}>
+              <Button
+                type="primary"
+                size="small"
+                icon={<EditOutlined />}
+                onClick={() => handleStatusUpdate(record)}
+                className="bg-blue-500 hover:bg-blue-600 border-none"
+              >
+                Update Status
+              </Button>
+            </motion.div>
+          )}
+        </div>
       ),
     },
   ];
@@ -135,6 +178,7 @@ const RequestTable: React.FC = () => {
       transition={{ duration: 0.5 }}
       className="p-6 bg-white rounded-xl shadow-sm"
     >
+      {contextHolder}
       <div className="w-full mx-auto">
         {/* Header */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
@@ -144,7 +188,7 @@ const RequestTable: React.FC = () => {
             transition={{ duration: 0.4 }}
             className="text-2xl md:text-3xl font-semibold text-gray-800"
           >
-            Service Requests
+            Manage Service Requests
           </motion.h1>
 
           <motion.div
@@ -169,6 +213,20 @@ const RequestTable: React.FC = () => {
           </motion.div>
         </div>
 
+        {/* Authorization Notice for HODs */}
+        {isHOD && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3 }}
+            className="mb-4 p-3 bg-blue-50 rounded-lg border border-blue-200"
+          >
+            <p className="text-sm text-blue-700">
+              As a Head of Department, you can update the status of service requests.
+            </p>
+          </motion.div>
+        )}
+
         {/* Table */}
         <motion.div
           initial={{ y: 20, opacity: 0 }}
@@ -192,8 +250,11 @@ const RequestTable: React.FC = () => {
                 }`
               }
               onRow={(record) => ({
-                onClick: () =>
-                  setSelectedRow(record.id === selectedRow ? null : record.id),
+                onClick: (e) => {
+                  // Prevent row click when clicking on buttons
+                  if ((e.target as HTMLElement).closest('button')) return;
+                  setSelectedRow(record.id === selectedRow ? null : record.id);
+                },
               })}
               expandable={{
                 expandedRowRender: (record) => (
@@ -218,7 +279,7 @@ const RequestTable: React.FC = () => {
                       </div>
                       <div>
                         <h4 className="font-medium text-gray-700 mb-2">
-                          Satus
+                          Status
                         </h4>
                         <p className="text-gray-600">{record.status}</p>
                       </div>
@@ -256,6 +317,19 @@ const RequestTable: React.FC = () => {
                         </div>
                       </div>
                     </div>
+                    {isHOD && (
+                      <div className="mt-4 flex space-x-3">
+                        <button
+                          onClick={() => {
+                            setSelectedRequest(record);
+                            setIsModalVisible(true);
+                          }}
+                          className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
+                        >
+                          Update Status
+                        </button>
+                      </div>
+                    )}
                   </motion.div>
                 ),
                 rowExpandable: (record) => record.id === selectedRow,
@@ -263,57 +337,44 @@ const RequestTable: React.FC = () => {
               locale={{
                 emptyText: (
                   <Empty
-                    description={
-                      <span className="text-gray-500">No requests found</span>
-                    }
                     image={Empty.PRESENTED_IMAGE_SIMPLE}
+                    description="No requests found"
                   />
                 ),
               }}
             />
           </Spin>
-        </motion.div>
 
-        {/* Pagination */}
-        {requests.length > 0 && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.4, duration: 0.5 }}
-            className="flex justify-between items-center mt-6"
-          >
-            <div className="text-sm text-gray-500">
-              Showing {requests.length} of {pagination.total} requests
+          {/* Pagination */}
+          {requests.length > 0 && (
+            <div className="mt-6 flex justify-center">
+              <Pagination
+                current={pagination.current}
+                pageSize={pagination.pageSize}
+                total={pagination.total}
+                onChange={(page, pageSize) => {
+                  fetchRequests(page, pageSize);
+                }}
+                showSizeChanger
+                showTotal={(total, range) =>
+                  `${range[0]}-${range[1]} of ${total} items`
+                }
+              />
             </div>
-            <Pagination
-              current={pagination.current}
-              pageSize={pagination.pageSize}
-              total={pagination.total}
-              onChange={handleTableChange}
-              showSizeChanger
-              pageSizeOptions={["10", "20", "50"]}
-              className="[&_.ant-pagination-item-active]:bg-indigo-600 [&_.ant-pagination-item-active]:border-indigo-600 [&_.ant-pagination-item-active]:text-white"
-              itemRender={(_page, _type, originalElement) => (
-                <motion.div
-                  whileHover={{ scale: 1.1 }}
-                  whileTap={{ scale: 0.95 }}
-                >
-                  {originalElement}
-                </motion.div>
-              )}
-            />
-          </motion.div>
-        )}
+          )}
+        </motion.div>
       </div>
+
+      {/* Update Status Modal */}
       <UpdateRequestStatusModal
-        requestId={requestId}
-        initialStatus="IN_PROGRESS"
         visible={isModalVisible}
-        onClose={() => setIsModalVisible(false)}
-        onUpdate={() => handleStatusUpdate("")}
+        onClose={handleModalClose}
+        onUpdate={handleModalUpdate}
+        initialStatus={selectedRequest?.status}
+        requestId={selectedRequest?.id}
       />
     </motion.div>
   );
 };
 
-export default RequestTable;
+export default ManageRequestsTable;

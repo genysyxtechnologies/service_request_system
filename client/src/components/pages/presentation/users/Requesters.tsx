@@ -49,6 +49,8 @@ interface Requester {
   id: number;
   username: string;
   email: string;
+  firstName: string;
+  lastName: string;
   status?: "active" | "inactive";
 }
 
@@ -282,6 +284,21 @@ const RequestersTable: React.FC = () => {
     {
       title: (
         <Space>
+          <UserOutlined />
+          <span>Name</span>
+        </Space>
+      ),
+      key: "name",
+      render: (_: any, record: Requester) => (
+        <Space>
+          <Text strong>{record.firstName + " " + record.lastName}</Text>
+        </Space>
+      ),
+      sorter: true,
+    },
+    {
+      title: (
+        <Space>
           <MailOutlined />
           <span>Email</span>
         </Space>
@@ -313,13 +330,18 @@ const RequestersTable: React.FC = () => {
   ];
 
   // Function to close the modal
-  const closeModal = () => {
-    console.log("Closing modal...");
+  const closeModal = useCallback(() => {
+    // Force modal to close immediately
     setRoleModalVisible(false);
-    setUpdateRoleStatus({ status: "idle", message: null });
-    setSelectedRole("");
-  };
-  
+    
+    // Reset all related state after a short delay to ensure UI updates properly
+    setTimeout(() => {
+      setUpdateRoleStatus({ status: "idle", message: null });
+      setSelectedRole("");
+      setSelectedUser(null);
+    }, 100);
+  }, []);
+
 
   const handleUpdateRole = async () => {
     if (!selectedUser || !selectedRole) {
@@ -341,11 +363,7 @@ const RequestersTable: React.FC = () => {
 
         // Show success state briefly then close
         setTimeout(() => {
-          // Close modal directly
-          setRoleModalVisible(false);
-          // Reset state
-          setUpdateRoleStatus({ status: "idle", message: null });
-          setSelectedRole("");
+          closeModal(); // Use the closeModal function directly
           // Refresh data
           fetchData(pagination.current, pagination.pageSize, searchText);
         }, 1500);
@@ -500,7 +518,7 @@ const RequestersTable: React.FC = () => {
                   ),
                 }}
                 className="ant-table-striped"
-                rowClassName={(record, index) =>
+                rowClassName={(_, index) =>
                   `hover:bg-blue-50 transition-colors duration-200 ${
                     index % 2 === 0 ? "bg-gray-50" : ""
                   }`
@@ -512,58 +530,52 @@ const RequestersTable: React.FC = () => {
       </Card>
 
       {/* Role Update Modal */}
-      <Modal
-        title={
-          <div className="flex items-center gap-2">
-            <TeamOutlined className="text-blue-500" />
-            <span>Update User Role</span>
-          </div>
-        }
-        open={roleModalVisible}
-        onCancel={closeModal}
-        keyboard={true}
-        destroyOnClose={true}
-        footer={
-          updateRoleStatus.status === "success" ||
-          updateRoleStatus.status === "error"
-            ? null
-            : [
-                <Button
-                  key="cancel"
-                  onClick={closeModal}
-                  className="transition-all duration-300 ease-in-out hover:scale-105"
-                >
-                  Cancel
-                </Button>,
-                <Button
-                  key="submit"
-                  type="primary"
-                  icon={
-                    updateRoleStatus.status === "loading" ? (
-                      <LoadingOutlined />
-                    ) : (
-                      <CheckCircleOutlined />
-                    )
-                  }
-                  loading={updateRoleStatus.status === "loading"}
-                  onClick={handleUpdateRole}
-                  disabled={
-                    !selectedRole || updateRoleStatus.status === "loading"
-                  }
-                  className="bg-blue-600 hover:bg-blue-700 transition-all duration-300 ease-in-out hover:scale-105 shadow-md"
-                >
-                  Update Role
-                </Button>,
-              ]
-        }
-        centered
-        maskClosable={true}
-        className="role-update-modal"
-        width={500}
-        closable={true}
-        transitionName="custom-modal-animation"
-        maskTransitionName="custom-modal-mask-animation"
-      >
+      {roleModalVisible && (
+        <Modal
+          title="Update User Role"
+          open={true}
+          onCancel={() => {
+            setRoleModalVisible(false);
+            setSelectedRole("");
+            setSelectedUser(null);
+            setUpdateRoleStatus({ status: "idle", message: null });
+          }}
+          maskClosable={true}
+          closable={true}
+          destroyOnClose={true}
+          centered
+          width={500}
+          footer={
+            updateRoleStatus.status === "success" ||
+            updateRoleStatus.status === "error"
+              ? null
+              : [
+                  <Button
+                    key="cancel"
+                    onClick={() => {
+                      setRoleModalVisible(false);
+                      setSelectedRole("");
+                      setSelectedUser(null);
+                      setUpdateRoleStatus({ status: "idle", message: null });
+                    }}
+                  >
+                    Cancel
+                  </Button>,
+                  <Button
+                    key="submit"
+                    type="primary"
+                    loading={updateRoleStatus.status === "loading"}
+                    onClick={handleUpdateRole}
+                    disabled={
+                      !selectedRole || updateRoleStatus.status === "loading"
+                    }
+                    className="bg-blue-600 hover:bg-blue-700"
+                  >
+                    Update Role
+                  </Button>,
+                ]
+          }
+        >
 
         <AnimatePresence mode="wait">
           <motion.div
@@ -691,6 +703,7 @@ const RequestersTable: React.FC = () => {
           </motion.div>
         </AnimatePresence>
       </Modal>
+      )}
     </motion.div>
   );
 };

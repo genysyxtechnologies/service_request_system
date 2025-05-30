@@ -9,7 +9,6 @@ import {
   Input,
   Tag,
   Spin,
-  Alert,
   Tooltip,
   Empty,
   Dropdown,
@@ -41,7 +40,7 @@ import DeleteService from "../Services/DeleteService";
 
 const { Title, Text } = Typography;
 
-const roleColors = {
+const roleColors: Record<string, string> = {
   admin: "purple",
   manager: "blue",
   supervisor: "cyan",
@@ -49,10 +48,10 @@ const roleColors = {
 
 const ManagersTable: React.FC = () => {
   const { token } = useSelector((state: any) => state.auth);
-  const { fetchManagers, deleteManager, loading, error } = useManagers(token);
+  const { fetchManagers, deleteManager, loading } = useManagers(token);
   const { resetPassword } = useRequesters(token);
 
-  const [data, setData] = useState<Manager[]>([]);
+  const [, setData] = useState<Manager[]>([]);
   const [filteredData, setFilteredData] = useState<Manager[]>([]);
   const [pagination, setPagination] = useState({
     current: 1,
@@ -126,13 +125,6 @@ const ManagersTable: React.FC = () => {
   const handleCreateCancel = () => {
     setIsCreateModalVisible(false);
   };
-
-  const handleCreateSubmit = () => {
-    // Add your create manager logic here
-    setIsCreateModalVisible(false);
-    fetchData(); // Refresh the table
-  };
-
   const rowSelection = {
     selectedRowKeys,
     onChange: (keys: React.Key[]) => setSelectedRowKeys(keys),
@@ -369,7 +361,7 @@ const ManagersTable: React.FC = () => {
               transition={{ duration: 0.3 }}
             >
               <Table
-                columns={columns}
+                columns={columns as any}
                 dataSource={filteredData}
                 rowKey="id"
                 rowSelection={rowSelection}
@@ -403,7 +395,7 @@ const ManagersTable: React.FC = () => {
                   ),
                 }}
                 className="ant-table-striped"
-                rowClassName={(record, index) =>
+                rowClassName={(_record, index) =>
                   `hover:bg-blue-50 transition-colors duration-200 ${
                     index % 2 === 0 ? "bg-gray-50" : ""
                   }`
